@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>民航售票系统</title>
+	<link rel="stylesheet" href="/static/css/element.css">
+	<link rel="stylesheet" href="/static/css/index.css">
+	<link rel="stylesheet" href="/static/css/user.css">
+	<script src="/static/js/vue.js"></script>
+	<script src="/static/js/axios.js"></script>
+	<script src="/static/js/helper.js"></script>
+	<script src="/static/js/element.js"></script>
+</head>
+<body>
+  <div id="app" class="app-warpper">
+		<div class="app-menu">
+			<div class="title">
+				<img src="/static/img/logo.png">
+				<h3 class="menu-item">民航售票系统</h3>
+			</div>
+			<a href="../user_flight" class="menu-item {% block flight %}{% endblock %}">
+				<span slot="title">购票大厅</span>
+			</a>
+			<a href="../user_order" class="menu-item {% block order %}{% endblock %}">
+				<span slot="title">购票记录</span>
+			</a>
+			<a href="../user_user" class="menu-item {% block user %}{% endblock %}">
+				<span slot="title">个人中心</span>
+			</a>
+			<a href="../login" class="menu-item">
+				<span slot="title">退出登录</span>
+			</a>
+		</div>
+		<div class="app-body">
+			<div class="app-header">
+				<span id="user-name">user</span>
+			</div>
+			<div class="current-page">售票系统 / {% block current-page %}{% endblock %}</div>
+			<div class="app-container">
+				{% block mainbody %}
+				{% endblock %}
+			</div>
+		</div>
+  </div>
+  <script>
+    let userInfo = window.localStorage.getItem("aircraft_userInfo")
+    if (userInfo) {
+      userInfo = JSON.parse(userInfo)
+      document.getElementById('user-name').innerHTML = userInfo.name
+    }
+  </script>
+</body>

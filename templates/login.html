@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>民航售票系统</title>
+	<link rel="stylesheet" href="/static/css/element.css">
+	<link rel="stylesheet" href="/static/css/index.css">
+	<link rel="stylesheet" href="/static/css/login.css">
+	<script src="/static/js/vue.js"></script>
+	<script src="/static/js/axios.js"></script>
+	<script src="/static/js/helper.js"></script>
+	<script src="/static/js/element.js"></script>
+	<style></style>
+</head>
+<body>
+  <div id="app">
+    <!-- 登陆表单 -->
+    <div class="login-container">
+      <el-form ref="loginForm" :model="loginInfo" class="login-form" label-position="left">
+        <div class="title-container">
+          <h1 class="title">民航售票信息系统</h1>
+        </div>
+        <!-- 切换面板 -->
+        <el-tabs v-model="loginInfo.login_type" stretch>
+          <el-tab-pane label="账户登录" name="account"></el-tab-pane>
+          <el-tab-pane label="身份证登录" name="idcard"></el-tab-pane>
+        </el-tabs>
+        <el-form-item v-if="loginInfo.login_type == 'idcard'">
+          <el-input v-model="loginInfo.id_card" placeholder="身份证"/>
+        </el-form-item>
+        <el-form-item v-else>
+          <el-input  v-model="loginInfo.account" placeholder="账户"/>
+        </el-form-item>
+        <el-form-item>
+          <el-input ref="pwd" v-model="loginInfo.pwd" placeholder="密码" type="password"/>
+        </el-form-item>
+        <div class="login-check">
+          <el-checkbox v-model="remeberLoginStatus">记住密码</el-checkbox>
+          <el-button type="text" @click="showRegisterForm = true">用户注册</el-button>
+        </div>
+        <el-form-item >
+          <el-button style="width: 100%;" type="primary" @click="onLogin()">登录</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <!-- copyright -->
+    <div class="copyright">copyrightv©民航售票信息系统</div>
+    <!-- 注册弹窗 -->
+    <el-dialog title="注册" :visible.sync="showRegisterForm">
+      <el-form ref="registerForm" :model="registerInfo" :rules="registerRules" label-width="80px" label-position="left">
+        <el-form-item label="账户" prop="account">
+          <el-input v-model="registerInfo.account"/>
+        </el-form-item>
+        <el-form-item label="密码" prop="pwd">
+          <el-input v-model="registerInfo.pwd"/>
+        </el-form-item>
+        <el-form-item label="姓名" prop="name">
+          <el-input v-model="registerInfo.name"/>
+        </el-form-item>
+        <el-form-item label="身份证" prop="id_card">
+          <el-input v-model="registerInfo.id_card"/>
+        </el-form-item>
+        <el-form-item label="电话" prop="telephone">
+          <el-input v-model="registerInfo.telephone"/>
+        </el-form-item>
+        <el-form-item label="性别" prop="sex">
+          <el-select v-model="registerInfo.sex" placeholder="请选择性别">
+            <el-option label="男" :value="1"></el-option>
+            <el-option label="女" :value="2"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="showRegisterForm = false">取 消</el-button>
+        <el-button type="primary" @click="onRegisterUser">确 定</el-button>
+      </div>
+    </el-dialog>
+  </div>
+</body>
+<!-- 脚本 -->
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        loginInfo: {
+          login_type: 'account',
+          id_card: '',
+          account: '',
+          pwd: ''
+        },
+        // 自动登录
+        remeberLoginStatus: true,
+        // 注册
+        showRegisterForm: false,
+        registerInfo: {
+          id_card: '',
+          name: '',
+          account: '',
+          pwd: '',
+          sex: 1,
+          telephone: ''
+        },
+        registerRules: {
+          id_card: [{ required: true, message: '请输入正确的身份证', min: 18, max: 18, trigger: 'blur' }],
+          name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+          account: [{ required: true, message: '请输入登录账户', trigger: 'blur' }],
+          pwd: [{ required: true, message: '密码格式有误', min: 6, trigger: 'blur' }],
+          sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
+          telephone: [{ required: true, message: '电话号格式有误', min: 11, max: 11, trigger: 'blur' }]
+        }
+      }
+    },
+    mounted() {
+      this.remeberLoginStatus = window.localStorage.getItem("aircraft_remeberLoginStatus") === 'true'
+      if (this.remeberLoginStatus) {
+        const loginInfo = JSON.parse(window.localStorage.getItem("aircraft_loginInfo"))
+        if (loginInfo) {
+          this.loginInfo = loginInfo
+        }
+      }
+    },
+    methods: {
+      // 登陆
+      onLogin() {
+        const { account, pwd } = this.loginInfo
+        if (!account || !pwd) {
+          this.NotifyFail('请输入账户、密码')
+          return
+        }
+        // 用户登陆
+        axios.post(ToDJ('userLogin'), new URLSearchParams(this.loginInfo)).then(res => {
+          if (res.data.code === 0) {
+            this.NotifySuc("登陆成功")
+            console.log(res.data.data)
+            const user = res.data.data
+            // 记住密码
+            if (this.remeberLoginStatus) {
+              window.localStorage.setItem("aircraft_loginInfo", JSON.stringify(this.loginInfo))
+            }
+						window.localStorage.setItem("aircraft_remeberLoginStatus", this.remeberLoginStatus)
+						window.localStorage.setItem("aircraft_userInfo", JSON.stringify(res.data.data))
+            if (user.type === 1) {
+              window.location.href = '/admin'
+            } else {
+              window.location.href = '/user'
+            }
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
+      // 用户注册
+      onRegisterUser() {
+        this.$refs.registerForm.validate((valid) => {
+          if (valid) {
+            axios.post(ToDJ('userRegister'), new URLSearchParams(this.registerInfo)).then(res => {
+              if (res.data.code === 0) {
+                this.NotifySuc("注册成功")
+                this.showRegisterForm = false
+              } else {
+                this.NotifyFail(res.data.data)
+              }
+            })
+          }
+        })
+      },
+      // 成功提示
+      NotifySuc(str) {
+				this.$notify.success({
+					title: str,
+					showClose: false
+				});
+			},
+      // 错误提示
+			NotifyFail(str) {
+				this.$notify.error({
+					title: str,
+					showClose: false
+				});
+			}
+    }
+  })
+</script>

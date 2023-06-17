@@ -1,0 +1,158 @@
+{%extends "admin.html" %}
+ <!-- 导航标记 -->
+{% block ticket %}active{% endblock %}
+{% block current-page %}购票记录{% endblock %}
+<!-- 内容区 -->
+{% block mainbody %}
+
+{% verbatim %}
+<div id="appuserorder" class="container">
+  <div class="top-panel">
+    <div class="panel-header">
+      <div class="panel-title">机票列表</div>
+    </div>
+  </div>
+  <div class="table-wrapper">
+    <el-table
+      :data="list"
+      style="width: 100%">
+      <el-table-column
+        prop="id"
+        label="订单号">
+      </el-table-column>
+      <el-table-column
+        prop="corp"
+        label="航空公司"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="flight_id"
+        label="航班号"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="user_name"
+        label="用户名称"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="ticket_type"
+        label="类型"
+        :formatter="onFormatterTicketType"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="boarding_time"
+        label="等级时间"
+        width="180"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="seat_num"
+        label="座位号"
+        width="80"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="port"
+        label="登机口"
+        width="80"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="message"
+        label="通知">
+        <template slot-scope="{ row }">
+          <span style="color: red">{{ row.message }}</span>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+</div>
+{% endverbatim %}
+<script>
+  new Vue({
+    el: '#appuserorder',
+    data() {
+      return {
+        list: [],
+        queryInfo: {
+          user_id: ''
+        },
+        ticketTypeList: [
+          { id: 1, name: '头等舱' },
+          { id: 2, name: '经济舱' }
+        ]
+      }
+    },
+    mounted() {
+      let userInfo = window.localStorage.getItem("aircraft_userInfo")
+      if (userInfo) {
+        userInfo = JSON.parse(userInfo)
+        this.queryInfo.user_id = userInfo.id_card
+      }
+      this.getTicketList()
+    },
+    methods: {
+      getTicketList() {
+        // 获取列表
+        axios.post(ToDJ('ticketList'), new URLSearchParams()).then(res => {
+          if (res.data.code === 0) {
+            const list = res.data.data
+            for (const item of list) {
+              item.boarding_time = this.formateTime(item.boarding_time)
+            }
+            this.list = list 
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
+      // 订单状态格式化
+      onFormatterOrderStatus(row, column, callValue, index) {
+        const statusList = ['', '未放票', '已放票', '已退票']
+        return statusList[row.status]
+      },
+      // 成功提示
+      NotifySuc(str) {
+				this.$notify.success({
+					title: str,
+					showClose: false
+				});
+			},
+      // 错误提示
+			NotifyFail(str) {
+				this.$notify.error({
+					title: str,
+					showClose: false
+				});
+			},
+      // 订单类型格式化
+      onFormatterTicketType(row, column, callValue, index) {
+        for (const item of this.ticketTypeList) {
+          if (item.id === row.ticket_type) {
+            return item.name
+          }
+        }
+        return ''
+      },
+      formateTime(oriDate) {
+        if (!oriDate) {
+          return ''
+        }
+        const formateDate = new Date(oriDate)
+        const year =  formateDate.getFullYear()
+        const month =  formateDate.getMonth() + 1
+        const day = formateDate.getDate()
+        let h = formateDate.getHours()
+        let m = formateDate.getMinutes()
+        let s = formateDate.getSeconds()
+        h = h >= 10 ? h : `0${h}`
+        m = m >= 10 ? m : `0${m}`
+        s = s >= 10 ? s : `0${s}`
+        return `${year}-${month}-${day} ${h}:${m}`
+      }
+    }
+  })
+</script>
+{% endblock %}

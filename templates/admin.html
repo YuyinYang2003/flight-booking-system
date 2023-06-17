@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>民航售票系统</title>
+	<link rel="stylesheet" href="/static/css/element.css">
+	<link rel="stylesheet" href="/static/css/index.css">
+	<link rel="stylesheet" href="/static/css/admin.css">
+	<script src="/static/js/vue.js"></script>
+	<script src="/static/js/axios.js"></script>
+	<script src="/static/js/helper.js"></script>
+	<script src="/static/js/element.js"></script>
+</head>
+<body>
+  <div id="app" class="app-warpper">
+		<div class="app-menu">
+			<div class="title">
+				<img src="/static/img/logo.png">
+				<h3 class="menu-item">民航售票管理系统</h3>
+			</div>
+			<a href="../admin_flight" class="menu-item {% block flight %}{% endblock %}">
+				<span slot="title">航班管理</span>
+			</a>
+			<a href="../admin_order" class="menu-item {% block order %}{% endblock %}">
+				<span slot="title">订单管理</span>
+			</a>
+			<a href="../admin_ticket" class="menu-item {% block ticket %}{% endblock %}">
+				<span slot="title">机票管理</span>
+			</a>
+			<a href="../admin_user" class="menu-item {% block user %}{% endblock %}">
+				<span slot="title">用户管理</span>
+			</a>
+			<a href="../login" class="menu-item">
+				<span slot="title">退出登录</span>
+			</a>
+		</div>
+		<div class="app-body">
+			<div class="app-header">
+				<span id="user-name">admin</span>
+			</div>
+			<div class="current-page">管理系统 / {% block current-page %}{% endblock %}</div>
+			<div class="app-container">
+				{% block mainbody %}
+				{% endblock %}
+			</div>
+		</div>
+  </div>
+  <script>
+    let userInfo = window.localStorage.getItem("aircraft_userInfo")
+    if (userInfo) {
+      userInfo = JSON.parse(userInfo)
+      document.getElementById('user-name').innerHTML = userInfo.name
+    }
+  </script>
+</body>

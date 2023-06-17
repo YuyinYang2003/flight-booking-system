@@ -1,0 +1,245 @@
+{%extends "user.html" %}
+ <!-- 导航标记 -->
+{% block flight %}active{% endblock %}
+{% block current-page %}航班管理{% endblock %}
+<!-- 内容区 -->
+{% block mainbody %}
+
+{% verbatim %}
+<div id="app2" class="container">
+  <div class="top-panel">
+    <div class="panel-header">
+      <div class="panel-title">航班列表</div>
+    </div>
+    <div class="query-more">
+      <div class="query-teim">
+        <el-input size="mini" prefix-icon="el-icon-search" v-model="queryInfo.flight_num" placeholder="请输入航班号"></el-input>
+      </div>
+      <div class="query-teim">
+        <el-input size="mini" v-model="queryInfo.depart" placeholder="出发城市"></el-input>
+      </div>
+      <div class="query-teim">
+        <el-button size="mini" type="primary" icon="el-icon-refresh" round @click="onSwitchCity"></el-button>
+      </div>
+      <div class="query-teim">
+        <el-input size="mini" v-model="queryInfo.arrive" placeholder="到达城市"></el-input>
+      </div>
+      <div class="query-teim">
+        <el-date-picker size="mini" v-model="queryInfo.depart_time" value-format="yyyy-MM-dd" type="date" placeholder="选择日期">
+      </div>
+      <div class="query-teim">
+        <el-button size="mini" type="warning" @click="onRestQuery">重置</el-button>
+        <el-button size="mini" type="primary" @click="getFlightList">查询</el-button>
+      </div>
+    </div>
+  </div>
+  <div class="table-wrapper">
+    <el-table
+      :data="list"
+      style="width: 100%">
+      <el-table-column
+        prop="flight_num"
+        label="航班号"
+        width="100"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="depart_time"
+        label="出发时间"
+        width="150"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="arrive_time"
+        label="到达时间"
+        width="150"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="depart_airport"
+        label="出发机场">
+      </el-table-column>
+      <el-table-column
+        prop="arrive_airport"
+        label="到达机场">
+      </el-table-column>
+      <el-table-column
+        prop="price_economy_class"
+        label="最低票价"
+        width="80"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="ticket_remain"
+        label="剩余票数"
+        width="80"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        width="80"
+        align="right">
+        <template slot-scope="{ row }">
+          <el-button v-if="row.ticket_remain > 0" type="text" @click="onChossFlight(row)">购票</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+
+  <!-- 选票 -->
+  <el-dialog :visible.sync="showABuyInfoForm">
+    <el-form ref="addOrderForm" :model="buyInfo" label-width="110px" label-position="left">
+      <el-form-item label="座位类型" prop="ticket_type">
+        <el-radio v-model="buyInfo.ticket_type" label="1">头等舱 {{buyInfo.price_first_class}}</el-radio>
+        <el-radio v-model="buyInfo.ticket_type" label="2">经济舱 {{buyInfo.price_economy_class}}</el-radio>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button type="primary" @click="onSubmitBuy">确认购买</el-button>
+    </div>
+  </el-dialog>
+</div>
+{% endverbatim %}
+<script>
+  new Vue({
+    el: '#app2',
+    data() {
+      return {
+        list: [],
+        // 添加
+        addFlightFormType: 1,
+        showAddFlightForm: false,
+        addFlightInfo: {
+          flight_num: '',
+          corp: '',
+          depart: '',
+          arrive: '',
+          depart_time: '',
+          arrive_time: '',
+          depart_airport: '',
+          arrive_airport: '',
+          ticket_total_first_class: '',
+          ticket_total_economy_class: '',
+          ticket_remain: '',
+          price_first_class: '',
+          price_economy_class: '',
+          port: ''
+        },
+        queryInfo: {
+          flight_num: '',
+          depart: '',
+          arrive: '',
+          depart_time: ''
+        },
+        flightRules: {
+          name: [{ required: true, message: '请输入名称', trigger: 'blur' }]
+        },
+        // 购票
+        showABuyInfoForm: false,
+        buyInfo: {
+          user_id: '',
+          flight_num: '',
+          ticket_type: '1',
+          price_first_class: '',
+          price_economy_class: ''
+        }
+      }
+    },
+    mounted() {
+      this.getFlightList()
+      let userInfo = window.localStorage.getItem("aircraft_userInfo")
+      if (userInfo) {
+        userInfo = JSON.parse(userInfo)
+        this.buyInfo.user_id = userInfo.id_card
+      }
+    },
+    methods: {
+      getFlightList() {
+        // 获取列表
+        if (!this.queryInfo.depart_time) {
+          this.queryInfo.depart_time = ''
+        }
+        axios.post(ToDJ('flightList'), new URLSearchParams(this.queryInfo)).then(res => {
+          if (res.data.code === 0) {
+            const list = res.data.data
+            for (const item of list) {
+              item.depart_time = this.formateTime(item.depart_time)
+              item.arrive_time = this.formateTime(item.arrive_time)
+            }
+            this.list = list 
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
+      // 重置查询条件
+      onRestQuery() {
+        this.queryInfo = {
+          flight_num: '',
+          depart: '',
+          arrive: '',
+          depart_time: ''
+        }
+        this.getFlightList()
+      },
+      // 出发 到达 转换
+      onSwitchCity() {
+        const { depart, arrive } = this.queryInfo
+        this.queryInfo.depart = arrive
+        this.queryInfo.arrive = depart
+        this.getFlightList()
+      },
+      // 选票
+      onChossFlight(row) {
+        const { flight_num, price_first_class, price_economy_class } = row
+        this.buyInfo.flight_num = flight_num
+        this.buyInfo.price_first_class = price_first_class
+        this.buyInfo.price_economy_class = price_economy_class
+        this.showABuyInfoForm = true
+      },
+      // 下单
+      onSubmitBuy() {
+        axios.post(ToDJ('orderAdd'), new URLSearchParams(this.buyInfo)).then(res => {
+          if (res.data.code === 0) {
+            this.NotifySuc("购买成功")
+            this.showABuyInfoForm = false
+            this.getFlightList()
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
+      // 成功提示
+      NotifySuc(str) {
+				this.$notify.success({
+					title: str,
+					showClose: false
+				});
+			},
+      // 错误提示
+			NotifyFail(str) {
+				this.$notify.error({
+					title: str,
+					showClose: false
+				});
+			},
+      formateTime(oriDate) {
+        if (!oriDate) {
+          return ''
+        }
+        const formateDate = new Date(oriDate)
+        const year =  formateDate.getFullYear()
+        const month =  formateDate.getMonth() + 1
+        const day = formateDate.getDate()
+        let h = formateDate.getHours()
+        let m = formateDate.getMinutes()
+        let s = formateDate.getSeconds()
+        h = h >= 10 ? h : `0${h}`
+        m = m >= 10 ? m : `0${m}`
+        s = s >= 10 ? s : `0${s}`
+        return `${year}-${month}-${day} ${h}:${m}`
+      }
+    }
+  })
+</script>
+{% endblock %}

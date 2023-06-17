@@ -1,0 +1,335 @@
+{%extends "admin.html" %}
+ <!-- 导航标记 -->
+{% block flight %}active{% endblock %}
+{% block current-page %}航班管理{% endblock %}
+<!-- 内容区 -->
+{% block mainbody %}
+
+{% verbatim %}
+<div id="app2" class="container">
+  <div class="top-panel">
+    <div class="panel-header">
+      <div class="panel-title">航班列表</div>
+    </div>
+    <div class="query-more">
+      <div class="query-teim">
+        <el-input size="mini" prefix-icon="el-icon-search" v-model="queryInfo.flight_num" placeholder="请输入航班号"></el-input>
+      </div>
+      <div class="query-teim">
+        <el-input size="mini" v-model="queryInfo.depart" placeholder="出发城市"></el-input>
+      </div>
+      <div class="query-teim">
+        <el-button size="mini" type="primary" icon="el-icon-refresh" round @click="onSwitchCity"></el-button>
+      </div>
+      <div class="query-teim">
+        <el-input size="mini" v-model="queryInfo.arrive" placeholder="到达城市"></el-input>
+      </div>
+      <div class="query-teim">
+        <el-date-picker size="mini" v-model="queryInfo.depart_time" value-format="yyyy-MM-dd" type="date" placeholder="选择日期">
+      </div>
+      <div class="query-teim">
+        <el-button size="mini" type="warning" @click="onRestQuery">重置</el-button>
+        <el-button size="mini" type="primary" @click="getFlightList">查询</el-button>
+      </div>
+    </div>
+    <div class="add-wrapper">
+      <el-button type="text" icon="el-icon-plus" style="color: #999; width: 100%;" @click="onAddFlight">新建</el-button>
+    </div>
+  </div>
+  <div class="table-wrapper fligth-wrapper">
+    <div v-for="item in list" class="flight-item">
+      <div class="info info-1">
+        <div class="flight-num">{{ item.flight_num }}</div>
+        <div class="flight-info" style="color: #999;">{{ item.flight_info }}</div>
+      </div>
+      <div class="info info-2">
+        <div class="top">起飞时间</div>
+        <div class="bottom">{{ item.depart_time }}</div>
+      </div>
+      <div class="info info-3">
+        <el-progress :percentage="item.progress" style="width: 100%;"></el-progress>
+      </div>
+      <div class="info info-4">
+        <el-button type="text" @click="onSendDelay(item)">发送延误通知</el-button>
+      </div>
+    </div>
+    <!-- <el-table
+      :data="list"
+      border
+      style="width: 100%">
+      <el-table-column
+        prop="flight_num"
+        label="航班号">
+      </el-table-column>
+      <el-table-column
+        prop="corp"
+        label="航空公司">
+      </el-table-column>
+      <el-table-column
+        prop="depart"
+        label="出发">
+      </el-table-column>
+      <el-table-column
+        prop="arrive"
+        label="到达">
+      </el-table-column>
+      <el-table-column
+        prop="depart_time"
+        label="出发时间">
+      </el-table-column>
+      <el-table-column
+        prop="arrive_time"
+        label="到达时间">
+      </el-table-column>
+      <el-table-column
+        prop="depart_airport"
+        label="出发机场">
+      </el-table-column>
+      <el-table-column
+        prop="arrive_airport"
+        label="目的机场">
+      </el-table-column>
+      <el-table-column
+        prop="ticket_total_first_class"
+        label="头等舱总票数">
+      </el-table-column>
+      <el-table-column
+        prop="ticket_total_economy_class"
+        label="经济舱总票数">
+      </el-table-column>
+      <el-table-column
+        prop="ticket_remain"
+        label="剩余票数">
+      </el-table-column>
+      <el-table-column
+        prop="price_first_class"
+        label="头等舱票价">
+      </el-table-column>
+      <el-table-column
+        prop="price_economy_class"
+        label="经济舱票价">
+      </el-table-column>
+      <el-table-column
+        prop="port"
+        label="登机口">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        width="140"
+        align="center">
+        <template slot-scope="{ row }">
+          <el-button type="text" @click="onSendDelay(row)">发送延误通知</el-button>
+        </template>
+      </el-table-column>
+    </el-table> -->
+    
+  </div>
+  <el-dialog :visible.sync="showAddFlightForm">
+    <el-form ref="addFlightForm" :model="addFlightInfo" :rules="flightRules" label-width="110px" label-position="left">
+      <el-form-item label="航班号" prop="flight_num">
+        <el-input v-model="addFlightInfo.flight_num"/>
+      </el-form-item>
+      <el-form-item label="航空公司" prop="corp">
+        <el-input v-model="addFlightInfo.corp"/>
+      </el-form-item>
+      <el-form-item label="出发地" prop="depart">
+        <el-input v-model="addFlightInfo.depart"/>
+      </el-form-item>
+      <el-form-item label="目的地" prop="arrive">
+        <el-input v-model="addFlightInfo.arrive"/>
+      </el-form-item>
+      <el-form-item label="出发时间" prop="depart_time">
+        <el-date-picker
+          v-model="addFlightInfo.depart_time"
+          type="datetime"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          placeholder="选择日期时间">
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item label="达到时间" prop="arrive_time">
+        <el-date-picker
+          v-model="addFlightInfo.arrive_time"
+          type="datetime"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          placeholder="选择日期时间">
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item label="出发机场" prop="depart_airport">
+        <el-input v-model="addFlightInfo.depart_airport"/>
+      </el-form-item>
+      <el-form-item label="目的机场" prop="arrive_airport">
+        <el-input v-model="addFlightInfo.arrive_airport"/>
+      </el-form-item>
+      <el-form-item label="头等舱总票数" prop="ticket_total_first_class">
+        <el-input v-model="addFlightInfo.ticket_total_first_class"/>
+      </el-form-item>
+      <el-form-item label="经济舱总票数" prop="ticket_total_economy_class">
+        <el-input v-model="addFlightInfo.ticket_total_economy_class"/>
+      </el-form-item>
+      <el-form-item label="剩余票数" prop="ticket_remain">
+        <el-input v-model="addFlightInfo.ticket_remain"/>
+      </el-form-item>
+      <el-form-item label="头等舱票价" prop="price_first_class">
+        <el-input v-model="addFlightInfo.price_first_class"/>
+      </el-form-item>
+      <el-form-item label="经济舱票价" prop="price_economy_class">
+        <el-input v-model="addFlightInfo.price_economy_class"/>
+      </el-form-item>
+      <el-form-item label="登机口" prop="port">
+        <el-input v-model="addFlightInfo.port"/>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="onSubmitAddFlight">添加</el-button>
+    </div>
+  </el-dialog>
+</div>
+{% endverbatim %}
+<script>
+  new Vue({
+    el: '#app2',
+    data() {
+      return {
+        list: [],
+        queryInfo: {
+          flight_num: '',
+          depart: '',
+          arrive: '',
+          depart_time: ''
+        },
+        // 添加
+        addFlightFormType: 1,
+        showAddFlightForm: false,
+        addFlightInfo: {
+          flight_num: '',
+          corp: '',
+          depart: '',
+          arrive: '',
+          depart_time: '',
+          arrive_time: '',
+          depart_airport: '',
+          arrive_airport: '',
+          ticket_total_first_class: '',
+          ticket_total_economy_class: '',
+          ticket_remain: '',
+          price_first_class: '',
+          price_economy_class: '',
+          port: ''
+        },
+        flightRules: {
+          name: [{ required: true, message: '请输入名称', trigger: 'blur' }]
+        }
+      }
+    },
+    mounted() {
+      this.getFlightList()
+    },
+    methods: {
+      getFlightList() {
+        // 获取列表
+        if (!this.queryInfo.depart_time) {
+          this.queryInfo.depart_time = ''
+        }
+        axios.post(ToDJ('flightList'), new URLSearchParams(this.queryInfo)).then(res => {
+          if (res.data.code === 0) {
+            const list = res.data.data
+            for (const item of list) {
+              item.depart_time = this.formateTime(item.depart_time)
+              item.arrive_time = this.formateTime(item.arrive_time)
+              item.flight_info = `航线：${item.depart}-${item.arrive};  航空公司：${item.corp};  票价：头等舱${item.price_first_class}元;  经济舱${item.price_economy_class}元;`
+              item.progress =  Number((item.ticket_remain / (item.ticket_total_first_class + item.ticket_total_economy_class) * 100).toFixed(2))
+            }
+            this.list = list 
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
+      // 重置查询条件
+      onRestQuery() {
+        this.queryInfo = {
+          flight_num: '',
+          depart: '',
+          arrive: '',
+          depart_time: ''
+        }
+        this.getFlightList()
+      },
+      // 出发 到达 转换
+      onSwitchCity() {
+        const { depart, arrive } = this.queryInfo
+        this.queryInfo.depart = arrive
+        this.queryInfo.arrive = depart
+        this.getFlightList()
+      },
+      // 点击添加
+      onAddFlight() {
+        this.addFlightFormType = 1
+        this.showAddFlightForm = true
+      },
+      // 提交添加
+      onSubmitAddFlight() {
+        this.$refs.addFlightForm.validate((valid) => {
+          if (valid) {
+            // 新添加
+            if (this.addFlightFormType === 1) {
+              axios.post(ToDJ('flightAdd'), new URLSearchParams(this.addFlightInfo)).then(res => {
+                if (res.data.code === 0) {
+                  this.NotifySuc("添加成功")
+                  this.showAddFlightForm = false
+                  this.getFlightList()
+                } else {
+                  this.NotifyFail(res.data.data)
+                }
+              })
+            }
+          }
+        })
+      },
+      // 发送延误通知
+      onSendDelay(row) {
+        const { flight_num } = row
+        axios.post(ToDJ('flightDelay'), new URLSearchParams({ flight_num })).then(res => {
+          if (res.data.code === 0) {
+            this.NotifySuc("成功")
+            this.getFlightList()
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
+      // 成功提示
+      NotifySuc(str) {
+				this.$notify.success({
+					title: str,
+					showClose: false
+				});
+			},
+      // 错误提示
+			NotifyFail(str) {
+				this.$notify.error({
+					title: str,
+					showClose: false
+				});
+			},
+      formateTime(oriDate) {
+        console.log(oriDate)
+        if (!oriDate) {
+          return ''
+        }
+        const formateDate = new Date(oriDate)
+        const year =  formateDate.getFullYear()
+        const month =  formateDate.getMonth() + 1
+        const day = formateDate.getDate()
+        let h = formateDate.getHours()
+        let m = formateDate.getMinutes()
+        let s = formateDate.getSeconds()
+        h = h >= 10 ? h : `0${h}`
+        m = m >= 10 ? m : `0${m}`
+        s = s >= 10 ? s : `0${s}`
+        return `${year}-${month}-${day} ${h}:${m}`
+      }
+    }
+  })
+</script>
+{% endblock %}
