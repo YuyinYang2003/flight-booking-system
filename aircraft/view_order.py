@@ -327,3 +327,16 @@ def orderReturn(request):
   checkOrder.order_status = '退款申请'  #修改订单状态
   checkOrder.save()
   return Action.success()
+
+@api_view(['GET',"POST"])
+# 处理退票
+def returnmoney(request):
+  # 获取参数
+  order_id = request.POST.get('order_id')
+  # 查询
+  checkOrder = order_info.objects.filter(order_id=order_id).first()
+  if not checkOrder :
+    return Action.fail("订单不存在")
+  checkOrder.order_status = '已退款'  #修改订单状态
+  checkOrder.save()
+  return Action.success()
