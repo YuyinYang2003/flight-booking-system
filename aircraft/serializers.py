@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from .models_view import *
 
 # 用户
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -55,3 +56,15 @@ class Passenger_userSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = passenger_user
         fields = ['user_name', 'passenger_identity_id']
+
+#有转机的路线信息
+class MultiFlightSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = flight_result
+        fields = ['airplane_num1', 'airplane_num2', 'depart_time1','arrive_time2','depart_airport_name','transfer_airport_name','arrive_airport_name','economy_class_price']
+
+#直达的路线信息
+class FlightSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = flight_city2
+        fields = ['airplane_num', 'depart_time','arrive_time','depart_airport_name','arrive_airport_name','economy_class_price']

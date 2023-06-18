@@ -37,7 +37,7 @@ class flight_result(models.Model):
         db_table = 'flight_result'
 
 #单次查询
-class flight_info(models.Model):
+class flight_city2(models.Model):
     flight_num = models.CharField(primary_key=True, max_length=10) # 唯一标识飞机编号
     depart_time = models.DateTimeField() # 出发时间
     arrive_time = models.DateTimeField() # 达到时间

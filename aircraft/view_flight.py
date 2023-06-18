@@ -2,30 +2,57 @@ from rest_framework.decorators import api_view
 from datetime import datetime,timedelta
 from .Action import Action
 from .models import *
+from .models_view import *
 from .serializers import *
 from django.shortcuts import render
 from django.db.models import Q
 
 @api_view(['GET',"POST"])
 # 列表
+# 查询航班
 def flightList(request):
-  flight_num = request.POST.get('flight_num')
+  #航班查询四个筛选方式：价格，出发地，到达地，出发日期，行李信息
+  price_low = request.POST.get('price_low')
+  price_high = request.POST.get('price_high')
   depart = request.POST.get('depart')
   arrive = request.POST.get('arrive')
   depart_time = request.POST.get('depart_time')
-  list = flight.objects.all()
-  if flight_num:
-    list = list.filter(flight_num__icontains=flight_num)
-  if  depart:
-    list = list.filter(depart__icontains=depart)
-  if  arrive:
-    list = list.filter(arrive__icontains=arrive)
-  if  depart_time :
-    list = list.filter(depart_time__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
-  return Action.success(FlightSerializer(list, many = True).data)
+  baggage = request.POST.get('luggage') #只能筛选全都含免费行李/无筛选需求，要求全都含免费行李为1，无筛选需求为0
+  flight_mode = request.POST.get('flight_mode') #要么中转要么直飞，0是直飞，1是中转
+  if flight_mode == 1:
+    list = flight_result.objects.all()
+    #筛选中价格筛选是只要三种价格一种在区间内，这个飞行方案就会出现
+    if price_low:
+      list = list.filter(Q(economy_class_price__gt=price_low)|Q(first_class_price__gt=price_low)|Q(business_class_price__gt=price_low))
+    if price_high:
+      list = list.filter(Q(economy_class_price__lt=price_high)|Q(first_class_price__lt=price_high)|Q(business_class_price__lt=price_high))
+    if depart:
+      list = list.filter(depart_city=depart)
+    if arrive:
+      list = list.filter(arrive_city=arrive)
+    if depart_time:
+      list = list.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
+    if baggage:
+      list = list.filter(Q(baggage_info1=1)&Q(baggage_info2=1))
+    return Action.success(MultiFlightSerializer(list, many = True).data) #多加一个转机的serializer
+  else:
+    list = flight_city2.objects.all()
+    if price_low:
+      list = list.filter(Q(economy_class_price__gt=price_low)|Q(first_class_price__gt=price_low)|Q(business_class_price__gt=price_low))
+    if price_high:
+      list = list.filter(Q(economy_class_price__lt=price_high)|Q(first_class_price__lt=price_high)|Q(business_class_price__lt=price_high))
+    if depart:
+      list = list.filter(depart_city=depart)
+    if arrive:
+      list = list.filter(arrive_city=arrive)
+    if depart_time:
+      list = list.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
+    if baggage:
+      list = list.filter(baggage_info=1)
+    return Action.success(FlightSerializer(list, many = True).data)
 
 @api_view(['GET',"POST"])
-# 添加
+# 管理员添加新航班
 def flightAdd(request):
   # 获取参数
   flight_num = request.POST.get('flight_num')
@@ -55,6 +82,7 @@ def flightAdd(request):
   return Action.success()
 
 #这一段没改完，得改完view_ticket再改
+'''
 @api_view(['GET',"POST"])
 # 发送延误
 def flightDelay(request):
@@ -71,3 +99,4 @@ def flightDelay(request):
     item.message = '该航班已延误'
     item.save()
   return Action.success()
+'''
