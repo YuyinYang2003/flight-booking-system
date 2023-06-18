@@ -24,6 +24,44 @@ def userRegister(request):
   return Action.success()
 
 @api_view(['GET',"POST"])
+# 乘机人注册
+def passengerRegister(request):
+  user_name = request.POST.get('user_name')
+  passenger_identity_id = request.POST.get('passenger_identity_id')
+  passenger_name=request.POST.get('passenger_name')
+  sex = request.POST.get('sex')
+  birthdate = request.POST.get('birthdate')
+  phone = request.POST.get('phone')
+  passport = request.POST.get('passport')
+  passenger_type = request.POST.get('passenger_type')
+  # 查询身份证号是否已被注册
+  checkIdentity = passenger_info.objects.filter(Q(passenger_identity_id=passenger_identity_id))
+  if checkIdentity.exists() == True :
+    # 如果已经被注册,则直接返回错误消息
+    return Action.fail("乘机人已被注册，可直接绑定，不可重复注册")
+  else:
+    # 若没注册，添加入数据库
+    newPassenger = passenger_info(passenger_identity_id=passenger_identity_id, passenger_name=passenger_name, sex=sex, birthdate=birthdate, phone=phone, passport=passport, passenger_type=passenger_type)
+    newPassenger.save()
+    return Action.success()
+
+@api_view(['GET',"POST"])
+# 乘机人绑定
+def passengerRegister(request):
+  user_name = request.POST.get('user_name')
+  passenger_identity_id = request.POST.get('passenger_identity_id')
+  # 查询乘机人是否被该用户绑定
+  checkIdentityUser = passenger_user.objects.filter(Q(passenger_identity_id=passenger_identity_id)&Q(user_name=user_name))
+  if checkIdentityUser.exists() == True :
+    # 如果已经被注册,则直接返回错误消息
+    return Action.fail("乘机人已被绑定")
+  else:
+  # 若没注册，添加入数据库
+    newPassengerUser = passenger_user(user_name=user_name, passenger_identity_id=passenger_identity_id)
+    newPassengerUser.save()
+    return Action.success()
+
+@api_view(['GET',"POST"])
 # 用户编辑
 def userEdit(request):
   # 获取参数
@@ -69,6 +107,28 @@ def adminEdit(request):
     return Action.fail("管理员不存在")
 
 @api_view(['GET',"POST"])
+# 乘机人编辑
+def userEdit(request):
+  # 获取参数
+  passenger_identy_id=request.POST.get('passenger_identity_id')
+  phone = request.POST.get('phone')
+  passport = request.POST.get('passport')
+  passenger_type = request.POST.get('passenger_type')
+  # 查询是否存在
+  checkPassenger = passenger_info.objects.filter(Q(passenger_identy_id=passenger_identy_id))
+  if checkPassenger.exists() == True :
+    # 如果存在则开始更改
+    newpassenger = checkPassenger.first()
+    newpassenger.phone=phone
+    newpassenger.passport=passport
+    newpassenger.passenger_type=passenger_type
+    newpassenger.save()
+    return Action.success(Passenger_infoSerializer(newpassenger, many = False).data)
+  else:
+    # 若没注册
+    return Action.fail("乘机人不存在，请先注册")
+
+@api_view(['GET',"POST"])
 # 用户登录
 def userLogin(request):
   # 获取参数
@@ -99,7 +159,7 @@ def userLogin(request):
   
 
 @api_view(['GET',"POST"])
-# 列表
+# 管理员查看用户列表
 def userList(request):
   name = request.POST.get('name')
   if name:
@@ -107,3 +167,23 @@ def userList(request):
   else:
     list = user_info.objects.all()
   return Action.success(UserSerializer(list, many = True).data)
+
+@api_view(['GET',"POST"])
+# 用户查看乘机人列表
+def passengerList(request):
+  user_name = request.POST.get('user_name')
+  list = passenger_user.objects.all()
+  list = list.filter(user_name=user_name)
+  arr = []
+  for item in list:
+    temp_data = {}
+    temp_data['passenger_identity_id'] = item.passenger_identity_id
+    passenger=passenger_info.objects.filter(passenger_identity_id=item.passenger_identity_id).first()
+    temp_data['passenger_name'] = passenger.passenger_name 
+    temp_data['sex'] = passenger.sex
+    temp_data['birthdate'] = passenger.birthdate
+    temp_data['phone'] = passenger.phone
+    temp_data['passport'] = passenger.passport
+    temp_data['passenger_type'] = passenger.passenger_type
+    arr.append(temp_data)
+  return Action.success(arr)
