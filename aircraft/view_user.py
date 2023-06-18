@@ -187,3 +187,21 @@ def passengerList(request):
     temp_data['passenger_type'] = passenger.passenger_type
     arr.append(temp_data)
   return Action.success(arr)
+
+# 用户编辑
+def buyVIP(request):
+  # 获取参数
+  user_name = request.POST.get('user_name')
+  # 查询是否本来就是会员
+  checkUser=user_info.objects.filter(Q(user_name=user_name))
+  checkVIP = checkUser.first().user_type
+  if checkVIP=='非会员':
+    # 如果非会员则开始更改
+    newuser = checkUser.first()
+    newuser.user_type='会员'
+    newuser.point=0
+    newuser.save()
+    return Action.success(UserSerializer(newuser, many = False).data)
+  else:
+    # 若本来就是
+    return Action.fail("已是会员")
