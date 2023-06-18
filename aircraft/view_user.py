@@ -50,11 +50,12 @@ def userEdit(request):
 # 管理员编辑
 def adminEdit(request):
   # 获取参数
+  administrator_id = request.POST.get('administrator_id')
   password = request.POST.get('password')
   phone = request.POST.get('phone')
   email = request.POST.get('email')
   # 查询是否存在
-  checkAdminId = administrator.objects.filter(Q(administrator_id=administrator_id))
+  checkAdminId = administrator_info.objects.filter(Q(administrator_id=administrator_id))
   if checkAdminId.exists() == True :
     # 如果存在则开始更改
     newadmin = checkAdminId.first()
@@ -86,7 +87,7 @@ def Login(request):
       return Action.fail("密码错误")
     return Action.success(UserSerializer(checkUser, many = False).data)
   else:
-    checkAdmin = administrator.objects.filter(administrator_id=administrator_id).first()
+    checkAdmin = administrator_info.objects.filter(administrator_id=administrator_id).first()
     if not checkAdmin:
     # 管理员不存在,则直接返回错误消息
       return Action.fail("管理员不存在")
