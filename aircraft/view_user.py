@@ -30,8 +30,7 @@ def passengerRegister(request):
   passenger_identity_id = request.POST.get('passenger_identity_id')
   passenger_name=request.POST.get('passenger_name')
   sex = request.POST.get('sex')
-  birthdate = request.POST.get('birthdate')
-  phone = request.POST.get('phone')
+  passenger_phone = request.POST.get('passenger_phone')
   passport = request.POST.get('passport')
   passenger_type = request.POST.get('passenger_type')
   # 查询身份证号是否已被注册
@@ -41,7 +40,7 @@ def passengerRegister(request):
     return Action.fail("乘机人已被注册，可直接绑定，不可重复注册")
   else:
     # 若没注册，添加入数据库
-    newPassenger = passenger_info(passenger_identity_id=passenger_identity_id, passenger_name=passenger_name, sex=sex, birthdate=birthdate, phone=phone, passport=passport, passenger_type=passenger_type)
+    newPassenger = passenger_info(passenger_identity_id=passenger_identity_id, passenger_name=passenger_name, sex=sex, passenger_phone=passenger_phone, passport=passport, passenger_type=passenger_type)
     newPassenger.save()
     return Action.success()
 
@@ -111,7 +110,7 @@ def adminEdit(request):
 def passengerEdit(request):
   # 获取参数
   passenger_identy_id=request.POST.get('passenger_identity_id')
-  phone = request.POST.get('phone')
+  passenger_phone = request.POST.get('passenger_phone')
   passport = request.POST.get('passport')
   passenger_type = request.POST.get('passenger_type')
   # 查询是否存在
@@ -119,7 +118,7 @@ def passengerEdit(request):
   if checkPassenger.exists() == True :
     # 如果存在则开始更改
     newpassenger = checkPassenger.first()
-    newpassenger.phone=phone
+    newpassenger.phone=passenger_phone
     newpassenger.passport=passport
     newpassenger.passenger_type=passenger_type
     newpassenger.save()
@@ -181,8 +180,7 @@ def passengerList(request):
     passenger=passenger_info.objects.filter(passenger_identity_id=item.passenger_identity_id).first()
     temp_data['passenger_name'] = passenger.passenger_name 
     temp_data['sex'] = passenger.sex
-    temp_data['birthdate'] = passenger.birthdate
-    temp_data['phone'] = passenger.phone
+    temp_data['passenger_phone'] = passenger.passenger_phone
     temp_data['passport'] = passenger.passport
     temp_data['passenger_type'] = passenger.passenger_type
     arr.append(temp_data)
