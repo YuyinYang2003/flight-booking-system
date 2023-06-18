@@ -93,10 +93,10 @@
           phone: ''
         },
         registerRules: {
-          user_name: [{ required: true, message: '请输入正确的账户名', min: 18, max: 18, trigger: 'blur' }],
-          email: [{ required: true, message: '请输入正确的邮箱', trigger: 'blur' }],
-          password: [{ required: true, message: '密码格式有误', min: 6, trigger: 'blur' }],
-          phone: [{ required: true, message: '电话号格式有误', min: 11, max: 11, trigger: 'blur' }]
+          user_name: [{ required: true, message: '账户名长度为1-18位', min: 1, max: 18, trigger: 'blur' }],
+          email: [{ required: true, message: '请输入正确的邮箱', pattern: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/, trigger: 'blur' }],
+          password: [{ required: true, message: '输入6-18位密码', min: 6, max:18, trigger: 'blur' }],
+          phone: [{ required: true, message: '请输入11位电话号码', min: 11, max: 11, trigger: 'blur' }]
         }
       }
     },
