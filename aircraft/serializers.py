@@ -2,13 +2,13 @@ from rest_framework import serializers
 from .models import *
 
 # 用户
-class User_infoSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = user_info
         fields = ['user_name',  'password', 'phone', 'email', 'user_type', 'point']
 
 #管理员
-class AdministratorSerializer(serializers.HyperlinkedModelSerializer):
+class AdminSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = administrator_info
         fields = ['administrator_id',  'password', 'phone', 'email']
