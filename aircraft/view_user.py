@@ -197,7 +197,6 @@ def buyVIP(request):
     # 如果非会员则开始更改
     newuser = checkUser.first()
     newuser.user_type='会员'
-    newuser.point=0
     newuser.save()
     return Action.success(UserSerializer(newuser, many = False).data)
   else:
