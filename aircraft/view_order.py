@@ -127,7 +127,7 @@ def orderAdd(request):
         point=buyTicketAlter(point,cost,user_type)[0]
       
       #生成订单
-      classl=['经济舱','头等舱','商务舱']
+      classl=['经济舱','头等舱','公务舱']
       usepointl=['否','是']
       newOrder=order_info(passenger_identity_id=passenger_identity_id,flight_num1=flight_num1,set_class1=classl[set_class],set_num1=seat_num,order_state='正常',point_use=usepointl[usePointOrNot],price=cost)
       
@@ -207,7 +207,7 @@ def orderAdd(request):
         point=buyTicketAlter(point,cost,user_type)[0]
       
       #生成订单
-      classl=['经济舱','头等舱','商务舱']
+      classl=['经济舱','头等舱','公务舱']
       usepointl=['否','是']
       newOrder=order_info(passenger_identity_id=passenger_identity_id,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=classl[set_class],set_class2=classl[set_class],set_num1=seat_num1,set_num2=seat_num2,order_state='正常',point_use=usepointl[usePointOrNot],price=cost)
       
@@ -218,31 +218,30 @@ def orderAdd(request):
   else:
     Action.fail("未绑定乘机人")
 
-# 列表
+# 订单列表
 def orderList(request):
-  user_id = request.POST.get('user_id')
+  #获取用户名信息
   user_name = request.POST.get('user_name')
-  list = order.objects.all()
-  if user_id:
-    list = list.filter(user_id=user_id)
+  list = order_info.objects.all()
+  #如果获取到，筛选出该用户的订单
+  if user_name:
+    list = list.filter(user_name=user_name)
   arr = []
+  #显示信息
   for item in list:
     temp_data = {}
-    temp_data['id'] = item.id
-    temp_data['user_id'] = item.user_id
-    if user_name:
-      temp_user = user.objects.filter(id_card=item.user_id, name__icontains=user_name).first()
-      if not temp_user:
-        continue
-    temp_data['user_name'] = user.objects.filter(id_card=item.user_id).first().name 
-    temp_data['flight_id'] = item.flight_id
-    temp_data['time'] = item.time
-    temp_data['ticket_id'] = item.ticket_id
-    temp_data['cost'] = item.cost
-    temp_data['status'] = item.status
-    temp_data['message'] = ''
-    if item.ticket_id:
-      temp_data['message'] = ticket.objects.filter(id=item.ticket_id).first().message
+    temp_data['order_id'] = item.order_id
+    temp_data['user_name'] = item.user_name
+    temp_data['passenger_name'] = passenger_info.objects.filter(passenger_identity_id=item.passenger_identity_id).first().passenger_name 
+    temp_data['flight_num1'] = item.flight_num1
+    temp_data['airplane_num1'] = flight_info.objects.filter(flight_num= item.flight_num1).first().airplane_num
+    temp_data['order_time'] = item.order_time
+    temp_data['price'] = item.price
+    temp_data['order_status'] = item.order_status
+    if item.flight_num2:
+      temp_data['flight_num2'] = item.flight_num2
+      temp_data['airplane_num2'] = flight_info.objects.filter(flight_num= item.flight_num2).first().airplane_num
+
     arr.append(temp_data)
   return Action.success(arr)
 
