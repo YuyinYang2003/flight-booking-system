@@ -47,7 +47,7 @@ def passengerRegister(request):
 
 @api_view(['GET',"POST"])
 # 乘机人绑定
-def passengerRegister(request):
+def passengerBound(request):
   user_name = request.POST.get('user_name')
   passenger_identity_id = request.POST.get('passenger_identity_id')
   # 查询乘机人是否被该用户绑定
@@ -108,7 +108,7 @@ def adminEdit(request):
 
 @api_view(['GET',"POST"])
 # 乘机人编辑
-def userEdit(request):
+def passengerEdit(request):
   # 获取参数
   passenger_identy_id=request.POST.get('passenger_identity_id')
   phone = request.POST.get('phone')
