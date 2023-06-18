@@ -299,7 +299,7 @@ def favouriteAdd(request):
           if UserlastFavorite.exists():
             newfavorite = favorites(favorites_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.economy_class_price,transfer=(checkFlight.depart_time2-checkFlight.arrive_time1))
           else:
-            newfavorite = favorites(favorites_id = 1,user_name=user_name,flight_num1=flight_num1,flight_num1=flight_num1,set_class1=set_class,set_class2=set_class,total_price=checkFlight.economy_class_price,transfer=(checkFlight.depart_time2-checkFlight.arrive_time1))
+            newfavorite = favorites(favorites_id = 1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.economy_class_price,transfer=(checkFlight.depart_time2-checkFlight.arrive_time1))
         else :
           if set_class == '头等舱':
             if UserlastFavorite.exists():
@@ -319,11 +319,11 @@ def favouriteAdd(request):
 # 退票
 def orderReturn(request):
   # 获取参数
-  id = request.POST.get('id')
+  order_id = request.POST.get('order_id')
   # 查询
-  checkOrder = order.objects.filter(id=id).first()
+  checkOrder = order_info.objects.filter(order_id=order_id).first()
   if not checkOrder :
     return Action.fail("订单不存在")
-  checkOrder.status = 3
+  checkOrder.order_status = '退款申请'  #修改订单状态
   checkOrder.save()
   return Action.success()
