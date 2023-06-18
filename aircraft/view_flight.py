@@ -82,7 +82,7 @@ def flightAdd(request):
   return Action.success()
 
 #这一段没改完，得改完view_ticket再改
-'''
+
 @api_view(['GET',"POST"])
 # 发送延误
 def flightDelay(request):
@@ -99,4 +99,3 @@ def flightDelay(request):
     item.message = '该航班已延误'
     item.save()
   return Action.success()
-'''

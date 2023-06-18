@@ -1,0 +1,225 @@
+{%extends "user.html" %}
+ <!-- 导航标记 -->
+{% block order %}active{% endblock %}
+{% block current-page %}购票记录{% endblock %}
+<!-- 内容区 -->
+{% block mainbody %}
+
+{% verbatim %}
+<div id="appuserorder" class="container">
+  <div class="top-panel">
+    <div class="panel-header">
+      <div class="panel-title">购票记录</div>
+    </div>
+  </div>
+  <div class="table-wrapper">
+    <el-table
+      :data="list"
+      style="width: 100%">
+      <el-table-column
+        prop="id"
+        label="订单号">
+      </el-table-column>
+      <el-table-column
+        prop="flight_id"
+        label="航班号"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="time"
+        label="下单时间"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="ticket_id"
+        label="机票"
+        align="center">
+        <template slot-scope="{ row }">
+          <el-button v-if="row.ticket_id" type="text" @click="onShowTicket(row)">查看</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="cost"
+        label="费用"
+        width="80"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="status"
+        label="状态"
+        :formatter="onFormatterOrderStatus"
+        width="80"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="message"
+        label="通知">
+        <template slot-scope="{ row }">
+          <span style="color: red">{{ row.message }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        width="140"
+        align="center">
+        <template slot-scope="{ row }">
+          <el-button v-if="row.status === 2" type="text" @click="onReturnTicket(row)">退票</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+  <!-- 展示票 -->
+  <el-dialog :visible.sync="showTicketInfo">
+    <div class="ticket-info-wrapper" v-if="ticketInfo">
+      <div class="ticket-header">{{ ticketInfo.corp }}</div>
+      <div class="ticket-content">
+        <div class="left">
+          <div class="info-item">
+            <span class="label">姓名</span>
+            <span class="valie">: {{ ticketInfo.user_name }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">航班号</span>
+            <span class="valie">: {{ ticketInfo.flight_id }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">出发站</span>
+            <span class="valie">: {{ ticketInfo.depart }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">到达站</span>
+            <span class="valie">: {{ ticketInfo.arrive }}</span>
+          </div>
+        </div>
+        <div class="right">
+          <div class="info-item">
+            <span class="label">日期</span>
+            <span class="valie">: {{ ticketInfo.depart_time }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">座位号</span>
+            <span class="valie">: {{ ticketInfo.seat_num }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">登机口</span>
+            <span class="valie">: {{ ticketInfo.port }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">登机时间</span>
+            <span class="valie">: {{ ticketInfo.boarding_time }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- <div slot="footer" class="dialog-footer">
+      <el-button type="warning">退票</el-button>
+    </div> -->
+  </el-dialog>
+</div>
+{% endverbatim %}
+<script>
+  new Vue({
+    el: '#appuserorder',
+    data() {
+      return {
+        list: [],
+        queryInfo: {
+          user_id: ''
+        },
+        // 票详情
+        showTicketInfo: false,
+        ticketInfo: null
+      }
+    },
+    mounted() {
+      let userInfo = window.localStorage.getItem("aircraft_userInfo")
+      if (userInfo) {
+        userInfo = JSON.parse(userInfo)
+        this.queryInfo.user_id = userInfo.id_card
+      }
+      this.getOrderList()
+    },
+    methods: {
+      getOrderList() {
+        // 获取列表
+        axios.post(ToDJ('orderList'), new URLSearchParams(this.queryInfo)).then(res => {
+          if (res.data.code === 0) {
+            const list = res.data.data
+            for (const item of list) {
+              item.time = this.formateTime(item.time)
+            }
+            this.list = list 
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
+      // 订单状态格式化
+      onFormatterOrderStatus(row, column, callValue, index) {
+        const statusList = ['', '未放票', '已放票', '已退票']
+        return statusList[row.status]
+      },
+      // 查看票详情
+      onShowTicket(row) {
+        // 获取票信息
+        axios.post(ToDJ('ticketInfo'), new URLSearchParams({ticket_id: row.ticket_id})).then(res => {
+          if (res.data.code === 0) {
+            const info = res.data.data
+            let formatinfo = {}
+            for (const key in info) {
+              formatinfo[key] = info[key][0]
+            }
+            formatinfo.boarding_time = this.formateTime(formatinfo.boarding_time)
+            formatinfo.depart_time = this.formateTime(formatinfo.depart_time)
+            this.ticketInfo = formatinfo 
+            this.showTicketInfo = true
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
+      // 退票
+      onReturnTicket(row) {
+        axios.post(ToDJ('orderReturn'), new URLSearchParams({id: row.id})).then(res => {
+          if (res.data.code === 0) {
+            this.getOrderList()
+            this.NotifySuc('退票成功')
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
+      // 成功提示
+      NotifySuc(str) {
+				this.$notify.success({
+					title: str,
+					showClose: false
+				});
+			},
+      // 错误提示
+			NotifyFail(str) {
+				this.$notify.error({
+					title: str,
+					showClose: false
+				});
+			},
+      formateTime(oriDate) {
+        if (!oriDate) {
+          return ''
+        }
+        const formateDate = new Date(oriDate)
+        const year =  formateDate.getFullYear()
+        const month =  formateDate.getMonth() + 1
+        const day = formateDate.getDate()
+        let h = formateDate.getHours()
+        let m = formateDate.getMinutes()
+        let s = formateDate.getSeconds()
+        h = h >= 10 ? h : `0${h}`
+        m = m >= 10 ? m : `0${m}`
+        s = s >= 10 ? s : `0${s}`
+        return `${year}-${month}-${day} ${h}:${m}`
+      }
+    }
+  })
+</script>
+{% endblock %}

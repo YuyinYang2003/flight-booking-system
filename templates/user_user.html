@@ -1,0 +1,107 @@
+{%extends "user.html" %}
+ <!-- 导航标记 -->
+{% block user %}active{% endblock %}
+{% block current-page %}个人中心{% endblock %}
+<!-- 内容区 -->
+{% block mainbody %}
+
+{% verbatim %}
+<div id="appuser" class="container">
+  <div class="content-panel">
+    <el-form ref="registerForm" :model="userInfo" :rules="registerRules" label-width="80px" label-position="left">
+      <el-form-item label="身份证" prop="id_card">
+        <el-input disabled v-model="userInfo.id_card"/>
+      </el-form-item>
+      <el-form-item label="账户" prop="account">
+        <el-input disabled v-model="userInfo.account"/>
+      </el-form-item>
+      <el-form-item label="密码" prop="pwd">
+        <el-input v-model="userInfo.pwd"/>
+      </el-form-item>
+      <el-form-item label="姓名" prop="name">
+        <el-input v-model="userInfo.name"/>
+      </el-form-item>
+      <el-form-item label="电话" prop="telephone">
+        <el-input v-model="userInfo.telephone"/>
+      </el-form-item>
+      <el-form-item label="性别" prop="sex">
+        <el-select v-model="userInfo.sex" placeholder="请选择性别">
+          <el-option label="男" :value="1"></el-option>
+          <el-option label="女" :value="2"></el-option>
+        </el-select>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button type="primary" @click="onSaveUser">保存</el-button>
+    </div>
+  </div>
+</div>
+{% endverbatim %}
+<script>
+  new Vue({
+    el: '#appuser',
+    data() {
+      return {
+        userInfo: {
+          id_card: '',
+          name: '',
+          account: '',
+          pwd: '',
+          type: 2,
+          sex: '',
+          telephone: ''
+        },
+        registerRules: {
+          id_card: [{ required: true, message: '请输入身份证', trigger: 'blur' }],
+          name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+          account: [{ required: true, message: '请输入登录账户', trigger: 'blur' }],
+          pwd: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+          sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
+          telephone: [{ required: true, message: '请输入电话号', trigger: 'blur' }]
+        }
+      }
+    },
+    mounted() {
+      this.getUserInfo()
+    },
+    methods: {
+      getUserInfo() {
+        let userInfo = window.localStorage.getItem("aircraft_userInfo")
+        if (userInfo) {
+          userInfo = JSON.parse(userInfo)
+          this.userInfo = userInfo
+        }
+      },
+      onSaveUser() {
+        this.$refs.registerForm.validate((valid) => {
+          if (valid) {
+            axios.post(ToDJ('userEdit'), new URLSearchParams(this.userInfo)).then(res => {
+              if (res.data.code === 0) {
+                this.NotifySuc("修改成功")
+                console.log(res.data.data)
+                document.getElementById('user-name').innerHTML = res.data.data.name
+              } else {
+                this.NotifyFail(res.data.data)
+              }
+            })
+          }
+        })
+      },
+      // 成功提示
+      NotifySuc(str) {
+				this.$notify.success({
+					title: str,
+					showClose: false
+				});
+			},
+      // 错误提示
+			NotifyFail(str) {
+				this.$notify.error({
+					title: str,
+					showClose: false
+				});
+			}
+    }
+  })
+</script>
+{% endblock %}

@@ -1,0 +1,200 @@
+{%extends "admin.html" %}
+ <!-- 导航标记 -->
+{% block user %}active{% endblock %}
+{% block current-page %}用户管理{% endblock %}
+<!-- 内容区 -->
+{% block mainbody %}
+
+{% verbatim %}
+<div id="app4" class="container">
+  <div class="top-panel">
+    <div class="panel-header">
+      <div class="panel-title">用户列表</div>
+      <div class="panel-filter">
+        <el-input size="mini" prefix-icon="el-icon-search" v-model="queryInfo.name" placeholder="请输入名称"></el-input>
+        <el-button size="mini" @click="getUserList">查询</el-button>
+      </div>
+    </div>
+    <div class="add-wrapper">
+      <el-button type="text" icon="el-icon-plus" style="color: #999; width: 100%;" @click="onAddUser">新建</el-button>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <el-table
+      :data="list"
+      border
+      style="width: 100%">
+      <el-table-column
+        prop="id_card"
+        label="编号/身份证号">
+      </el-table-column>
+      <el-table-column
+        prop="name"
+        label="名称">
+      </el-table-column>
+      <el-table-column
+        prop="account"
+        label="账户">
+      </el-table-column>
+      <el-table-column
+        prop="telephone"
+        label="联系方式">
+      </el-table-column>
+      <el-table-column
+        prop="sex"
+        label="性别"
+        :formatter="onFormatterSex">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        width="140"
+        align="center">
+        <template slot-scope="{ row }">
+          <el-button type="text" @click="onEditUser(row)">编辑</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+
+  <el-dialog :visible.sync="showAddUserForm">
+    <el-form ref="addUserForm" :model="addUserInfo" :rules="userRules" label-width="110px" label-position="left">
+      <el-form-item label="账户" prop="account">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.account"/>
+      </el-form-item>
+      <el-form-item label="密码" prop="pwd">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.pwd"/>
+      </el-form-item>
+      <el-form-item label="姓名" prop="name">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.name"/>
+      </el-form-item>
+      <el-form-item label="身份证" prop="id_card">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.id_card"/>
+      </el-form-item>
+      <el-form-item label="电话" prop="telephone">
+        <el-input v-model="addUserInfo.telephone"/>
+      </el-form-item>
+      <el-form-item label="性别" prop="sex">
+        <el-select :disabled="addUserFormType===2" v-model="addUserInfo.sex" placeholder="请选择性别">
+          <el-option label="男" :value="1"></el-option>
+          <el-option label="女" :value="2"></el-option>
+        </el-select>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="onSubmitAddUser">添加</el-button>
+    </div>
+  </el-dialog>
+</div>
+{% endverbatim %}
+<script>
+  new Vue({
+    el: '#app4',
+    data() {
+      return {
+        list: [],
+        queryInfo: {
+          name: ''
+        },
+        // 添加
+        addUserFormType: 1,
+        showAddUserForm: false,
+        addUserInfo: {
+          id_card: '',
+          name: '',
+          account: '',
+          pwd: '',
+          sex: 1,
+          telephone: ''
+        },
+        userRules: {
+          id_card: [{ required: true, message: '请输入身份证', trigger: 'blur' }],
+          name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+          account: [{ required: true, message: '请输入登录账户', trigger: 'blur' }],
+          pwd: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+          sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
+          telephone: [{ required: true, message: '电话号格式有误', min: 11, max: 11, trigger: 'blur' }]
+        }
+      }
+    },
+    mounted() {
+      this.getUserList()
+    },
+    methods: {
+      getUserList() {
+        // 获取列表
+        axios.post(ToDJ('userList'), new URLSearchParams(this.queryInfo)).then(res => {
+          if (res.data.code === 0) {
+            const list = res.data.data
+            this.list = list 
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
+      // 点击添加
+      onAddUser() {
+        this.addUserFormType = 1
+        this.addUserInfo = {
+          id_card: '',
+          name: '',
+          account: '',
+          pwd: '',
+          sex: 1,
+          telephone: ''
+        }
+        this.showAddUserForm = true
+      },
+      // 提交添加
+      onSubmitAddUser() {
+        this.$refs.addUserForm.validate((valid) => {
+          if (valid) {
+            // 新添加
+            if (this.addUserFormType === 1) {
+              axios.post(ToDJ('userRegister'), new URLSearchParams(this.addUserInfo)).then(res => {
+                if (res.data.code === 0) {
+                  this.NotifySuc("添加成功")
+                  this.showAddUserForm = false
+                  this.getUserList()
+                } else {
+                  this.NotifyFail(res.data.data)
+                }
+              })
+            }
+          }
+        })
+      },
+      // 修改信息
+      onEditUser(row) {
+        // const { id_card, name, account, pwd, sex, telephone } = row
+        this.addUserInfo = row
+        this.addUserFormType = 2
+        this.showAddUserForm = true
+      },
+      // 性别格式化
+      onFormatterSex(row, column, callValue, index) {
+        if (row.sex === 1) {
+          return '男'
+        } else if (row.sex === 2) {
+          return '女'
+        }
+        return ''
+      },
+      // 成功提示
+      NotifySuc(str) {
+				this.$notify.success({
+					title: str,
+					showClose: false
+				});
+			},
+      // 错误提示
+			NotifyFail(str) {
+				this.$notify.error({
+					title: str,
+					showClose: false
+				});
+			}
+    }
+  })
+</script>
+{% endblock %}
