@@ -87,9 +87,9 @@ class flight_info(models.Model):
     first_class_price  = models.DecimalField(max_digits=6, decimal_places=0) # 头等舱票价
     bussiness_class_price  = models.DecimalField(max_digits=6, decimal_places=0) # 公务舱票价
     baggage_choice={
-        (0),
-        (1),
-        (3)
+        ('0'),
+        ('1'),
+        ('3')
     }
     passenger_type =django_mysql.models.EnumField(choices=baggage_choice) # 含几件免费行李
  
