@@ -89,7 +89,7 @@ class flight_info(models.Model):
     baggage_choice={
         ('0'),
         ('1'),
-        ('3')
+        ('2')
     }
     passenger_type =django_mysql.models.EnumField(choices=baggage_choice) # 含几件免费行李
  
