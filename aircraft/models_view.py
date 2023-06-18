@@ -1,7 +1,7 @@
 from django.db import models
 from datetime import datetime
 import django_mysql.models
-
+#中转查询
 class flight_result(models.Model):
     flight_num1 = models.CharField(max_length=10) # 航班号1
     airplane_num1 = models.CharField(max_length=10) # 飞机号1
@@ -35,3 +35,29 @@ class flight_result(models.Model):
 
     class Meta:
         db_table = 'flight_result'
+
+#单次查询
+class flight_info(models.Model):
+    flight_num = models.CharField(primary_key=True, max_length=10) # 唯一标识飞机编号
+    depart_time = models.DateTimeField() # 出发时间
+    arrive_time = models.DateTimeField() # 达到时间
+    airplane_num = models.CharField(max_length=10) # 飞机编号
+    depart_airport_name = models.CharField(max_length=10) # 出发机场名
+    depart_city = models.CharField(max_length=30) # 出发城市
+    arrive_airport_name = models.CharField(max_length=10) # 到达机场名
+    arrive_city = models.CharField(max_length=30) # 到达城市
+    current_first_set = models.SmallIntegerField() # 头等舱剩余票数
+    current_economy_set = models.SmallIntegerField() # 经济舱剩余票数
+    current_bussiness_set = models.SmallIntegerField() # 公务舱剩余票数
+    ecnomy_class_price = models.DecimalField(max_digits=6, decimal_places=0) # 经济舱票价
+    first_class_price  = models.DecimalField(max_digits=6, decimal_places=0) # 头等舱票价
+    business_class_price  = models.DecimalField(max_digits=6, decimal_places=0) # 公务舱票价
+    baggage_choice={
+        ('0'),
+        ('1')
+    }
+    baggage_info =django_mysql.models.EnumField(choices=baggage_choice) # 含几件免费行李
+    depart_time_zones = models.SmallIntegerField()#出发地时区
+    arrive_time_zones = models.SmallIntegerField()#到达地时区
+    class Meta:
+        db_table = 'flight_city2'
