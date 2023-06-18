@@ -7,11 +7,10 @@ from django.db.models import Q
 from django.core import serializers
 
 # 机票详情
-# 购票记录里的查看
 def ticketInfo(request):
-  order_id = request.POST.get('order_id')
-  checkTicket = order_info.objects.filter(order_id=order_id).first()
-  checkFlight = flight_info.objects.filter(Q(flight_num1=checkTicket.) | Q(title__startswith='key2')).first()
+  ticket_id = request.POST.get('ticket_id')
+  checkTicket = ticket.objects.filter(id=ticket_id).first()
+  checkFlight = flight.objects.filter(flight_num = checkTicket.flight_id).first()
   checkUser = user.objects.filter(id_card = checkTicket.user_id).first()
   data = {}
   data['corp'] = checkFlight.corp,

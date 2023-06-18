@@ -8,18 +8,14 @@ from django.db.models import Q
 
 @api_view(['GET',"POST"])
 # 添加订单
-# 点确认购买
 def orderAdd(request):
   # 获取参数
-  user_name = request.POST.get('user_name')
-  passenger_identity_id = request.POST.get('passenger_identity_id') #需要增加乘机人信息
-  flight_num1 = request.POST.get('flight_num1')
-  flight_num2 = request.POST.get('flight_num2') #两个航班显示在同一条订单记录里
-  set_class1 = request.POST.get('set_class1')
-  set_class2 = request.POST.get('set_class2')
-  print('购票：', flight_num1, flight_num2, set_class1, set_class2, user_name, passenger_identity_id)
+  user_id = request.POST.get('user_id')
+  flight_num = request.POST.get('flight_num')
+  ticket_type = request.POST.get('ticket_type')
+  print('购票：', flight_num, ticket_type, user_id)
   # 查询航班
-  checkFlight = flight_info.objects.filter(flight_num=flight_num1).first()
+  checkFlight = flight.objects.filter(flight_num=flight_num).first()
   if checkFlight.ticket_remain == 0 :
     return Action.fail("已售罄")
   if ticket_type == '1':
@@ -48,7 +44,6 @@ def orderAdd(request):
   return Action.success()
 
 # 列表
-# 显示购票记录
 def orderList(request):
   user_id = request.POST.get('user_id')
   user_name = request.POST.get('user_name')

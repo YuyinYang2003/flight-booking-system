@@ -112,8 +112,8 @@
     methods: {
       // 登陆
       onLogin() {
-        const { user_name, password } = this.loginInfo
-        if (!user_name || !password) {
+        const { administrator_id, user_name, password } = this.loginInfo
+        if ((!user_name & !administrator_id) || !password) {
           this.NotifyFail('请输入账户、密码')
           return
         }
@@ -129,7 +129,7 @@
             }
 						window.localStorage.setItem("aircraft_remeberLoginStatus", this.remeberLoginStatus)
 						window.localStorage.setItem("aircraft_userInfo", JSON.stringify(res.data.data))
-            if (user.type === 1) {
+            if (administrator_id) {
               window.location.href = '/admin'
             } else {
               window.location.href = '/user'

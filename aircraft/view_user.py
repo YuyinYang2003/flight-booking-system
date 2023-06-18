@@ -91,7 +91,7 @@ def userLogin(request):
     if not checkAdmin:
     # 管理员不存在,则直接返回错误消息
       return Action.fail("管理员不存在")
-    if checkUser.password != password:
+    if checkAdmin.password != password:
     # 管理员存在,密码不一致,则直接返回错误消息
       return Action.fail("密码错误")
     # 登陆成功

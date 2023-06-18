@@ -5,7 +5,13 @@ from .models import *
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = user_info
-        fields = ['id_card', 'name', 'account', 'pwd', 'sex', 'telephone', 'type']
+        fields = ['user_name', 'password', 'phone', 'email', 'user_type', 'point']
+
+# 管理员
+class AdminSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = administrator_info
+        fields = ['administrator_id', 'email', 'password', 'phone']
 
 # 航班
 class FlightSerializer(serializers.HyperlinkedModelSerializer):
