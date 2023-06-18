@@ -25,14 +25,14 @@
         </div>
         <!-- 切换面板 -->
         <el-tabs v-model="loginInfo.login_type" stretch>
-          <el-tab-pane label="用户登录" name="account"></el-tab-pane>
+          <el-tab-pane label="用户登录" name="user"></el-tab-pane>
           <el-tab-pane label="管理员登录" name="administrator"></el-tab-pane>
         </el-tabs>
         <el-form-item v-if="loginInfo.login_type == 'administrator'">
           <el-input v-model="loginInfo.administrator_id" placeholder="管理员编号"/>
         </el-form-item>
         <el-form-item v-else>
-          <el-input  v-model="loginInfo.account" placeholder="账户"/>
+          <el-input  v-model="loginInfo.user_name" placeholder="账户"/>
         </el-form-item>
         <el-form-item>
           <el-input ref="password" v-model="loginInfo.password" placeholder="密码" type="password"/>
@@ -77,7 +77,7 @@
     data() {
       return {
         loginInfo: {
-          login_type: 'account',
+          login_type: 'user',
           administrator_id: '',
           user_name: '',
           password: ''
@@ -112,8 +112,8 @@
     methods: {
       // 登陆
       onLogin() {
-        const { account, password } = this.loginInfo
-        if (!account || !password) {
+        const { user_name, password } = this.loginInfo
+        if (!user_name || !password) {
           this.NotifyFail('请输入账户、密码')
           return
         }
