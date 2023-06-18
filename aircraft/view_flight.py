@@ -8,13 +8,17 @@ from django.db.models import Q
 
 @api_view(['GET',"POST"])
 # 列表
+# 查询航班
 def flightList(request):
-  flight_num = request.POST.get('flight_num')
+  #航班查询四个筛选方式：价格，出发地，到达地，出发日期，行李信息
+  price_low = request.POST.get('price_low')
+  price_high = request.POST.get('price_high')
   depart = request.POST.get('depart')
   arrive = request.POST.get('arrive')
   depart_time = request.POST.get('depart_time')
-  list = flight.objects.all()
-  if flight_num:
+  luggage = request.POST.get('luggage')
+  list = multi_flight.objects.all()
+  if price_low:
     list = list.filter(flight_num__icontains=flight_num)
   if  depart:
     list = list.filter(depart__icontains=depart)
@@ -25,7 +29,7 @@ def flightList(request):
   return Action.success(FlightSerializer(list, many = True).data)
 
 @api_view(['GET',"POST"])
-# 添加
+# 管理员添加新航班
 def flightAdd(request):
   # 获取参数
   flight_num = request.POST.get('flight_num')

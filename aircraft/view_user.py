@@ -103,7 +103,7 @@ def userLogin(request):
 def userList(request):
   name = request.POST.get('name')
   if name:
-    list = user_info.objects.filter(name__icontains=name).all()
+    list = user_info.objects.filter(user_name=name).all()
   else:
     list = user_info.objects.all()
   return Action.success(UserSerializer(list, many = True).data)
