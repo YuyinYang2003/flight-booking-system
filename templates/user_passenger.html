@@ -61,27 +61,30 @@
     </el-table>
   </div>
 
-  <el-dialog :visible.sync="showAddUserForm">
-    <el-form ref="addUserForm" :model="addUserInfo" :rules="userRules" label-width="110px" label-position="left">
-      <el-form-item label="账户" prop="account">
-        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.account"/>
+  <el-dialog :visible.sync="showAddPassenegerForm">
+    <el-form ref="addPassengerForm" :model="addPassengerInfo" :rules="PassengerRules" label-width="110px" label-position="left">
+      <el-form-item label="姓名" prop="passenger_name">
+        <el-input v-model="addPassengerInfo.account"/>
       </el-form-item>
-      <el-form-item label="密码" prop="pwd">
-        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.pwd"/>
+      <el-form-item label="身份证号" prop="passenger_identity_id">
+        <el-input v-model="addPassengerInfo.passenger_identity_id"/>
       </el-form-item>
-      <el-form-item label="姓名" prop="name">
-        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.name"/>
+      <el-form-item label="联系电话" prop="passenger_phone">
+        <el-input v-model="addPassengerInfo.passenger_phone"/>
       </el-form-item>
-      <el-form-item label="身份证" prop="id_card">
-        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.id_card"/>
+      <el-form-item label="证件号码" prop="passport">
+        <el-input v-model="addPassengerInfo.passport"/>
       </el-form-item>
-      <el-form-item label="电话" prop="telephone">
-        <el-input v-model="addUserInfo.telephone"/>
+      <el-form-item label="乘机人类型" prop="passenger_type">
+        <el-select :disabled="addUserFormType===2" v-model="addPassengerInfo.passenger_type" placeholder="请选择乘机人类型">
+          <el-option label="普通乘客" :value="普通乘客"></el-option>
+          <el-option label="留学生" :value="留学生"></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item label="性别" prop="sex">
-        <el-select :disabled="addUserFormType===2" v-model="addUserInfo.sex" placeholder="请选择性别">
-          <el-option label="男" :value="1"></el-option>
-          <el-option label="女" :value="2"></el-option>
+        <el-select :disabled="addUserFormType===2" v-model="addPassengerInfo.sex" placeholder="请选择性别">
+          <el-option label="男" :value="男"></el-option>
+          <el-option label="女" :value="女"></el-option>
         </el-select>
       </el-form-item>
     </el-form>
@@ -103,31 +106,31 @@
         // 添加
         addUserFormType: 1,
         showAddUserForm: false,
-        addUserInfo: {
-          id_card: '',
-          name: '',
-          account: '',
-          pwd: '',
+        addPassengerInfo: {
+          passenger_identity_id: '',
+          passenger_name: '',
+          passenger_phone: '',
+          passenger_type: '',
           sex: 1,
-          telephone: ''
+          passport: ''
         },
-        userRules: {
-          id_card: [{ required: true, message: '请输入身份证', trigger: 'blur' }],
-          name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-          account: [{ required: true, message: '请输入登录账户', trigger: 'blur' }],
-          pwd: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+        PassengerRules: {
+          passenger_identity_id: [{ required: true, message: '请输入18位身份证号', min: 18, max: 18, trigger: 'blur' }],
+          passenger_name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+          passport: [{ required: true, message: '请输入证件号码', trigger: 'blur' }],
+          passenger_type: [{ required: true, message: '请选择乘机人类型', trigger: 'change' }],
           sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
-          telephone: [{ required: true, message: '电话号格式有误', min: 11, max: 11, trigger: 'blur' }]
+          passenger_phone: [{ required: true, message: '请输入11位电话', min: 11, max: 11, trigger: 'blur' }]
         }
       }
     },
     mounted() {
-      this.getUserList()
+      this.getPassengerList()
     },
     methods: {
-      getUserList() {
+      getPassengerList() {
         // 获取列表
-        axios.post(ToDJ('userList'), new URLSearchParams(this.queryInfo)).then(res => {
+        axios.post(ToDJ('passengerList'), new URLSearchParams(this.addPassengerInfo)).then(res => {
           if (res.data.code === 0) {
             const list = res.data.data
             this.list = list 
