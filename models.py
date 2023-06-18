@@ -91,7 +91,7 @@ class flight_info(models.Model):
         ('1'),
         ('2')
     }
-    passenger_type =django_mysql.models.EnumField(choices=baggage_choice) # 含几件免费行李
+    baggage_info =django_mysql.models.EnumField(choices=baggage_choice) # 含几件免费行李
  
     class Meta:
         managed = False
