@@ -43,6 +43,11 @@ urlpatterns = [
     path('userRegister', view_user.userRegister, name='userRegister'),
     path('userEdit', view_user.userEdit, name='userEdit'),
     path('userList', view_user.userList, name='userList'),
+    #乘机人
+    path('passengerRegister', view_user.passengerRegister, name='passengerRegister'),
+    path('passengerBound', view_user.passengerBound, name='passengerBound'),
+    path('passengerEdit', view_user.passengerEdit, name='passengerEdit'),
+    path('passengerList', view_user.passengerList, name='passengerList'),
     #航班
     path('flightList', view_flight.flightList, name='flightList'),
     path('flightAdd', view_flight.flightAdd, name='flightAdd'),
@@ -54,6 +59,8 @@ urlpatterns = [
     # 机票
     path('ticketInfo', view_ticket.ticketInfo, name='ticketInfo'),
     path('ticketList', view_ticket.ticketList, name='ticketList'),
+    # 管理员
+    path('adminEdit', view_user.adminEdit, name='adminEdit'),
 
 
 ]
