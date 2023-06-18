@@ -30,7 +30,7 @@
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="primary" @click="onSaveUser">保存</el-button>
-      <el-button type="primary" @click="onSaveUser">购买会员</el-button>
+      <el-button type="primary" @click="onBuyVIP">购买会员</el-button>
     </div>
   </div>
 </div>
@@ -71,6 +71,22 @@
         this.$refs.registerForm.validate((valid) => {
           if (valid) {
             axios.post(ToDJ('userEdit'), new URLSearchParams(this.userInfo)).then(res => {
+              if (res.data.code === 0) {
+                this.NotifySuc("修改成功")
+                window.localStorage.setItem("aircraft_userInfo", JSON.stringify(res.data.data))
+                console.log(res.data.data)
+                document.getElementById('user_name').innerHTML = res.data.data.name
+              } else {
+                this.NotifyFail(res.data.data)
+              }
+            })
+          }
+        })
+      },
+      onBuyVIP() {
+        this.$refs.registerForm.validate((valid) => {
+          if (valid) {
+            axios.post(ToDJ('buyVIP'), new URLSearchParams(this.userInfo)).then(res => {
               if (res.data.code === 0) {
                 this.NotifySuc("修改成功")
                 window.localStorage.setItem("aircraft_userInfo", JSON.stringify(res.data.data))
