@@ -25,17 +25,17 @@
         </div>
         <!-- 切换面板 -->
         <el-tabs v-model="loginInfo.login_type" stretch>
-          <el-tab-pane label="账户登录" name="account"></el-tab-pane>
-          <el-tab-pane label="身份证登录" name="idcard"></el-tab-pane>
+          <el-tab-pane label="用户登录" name="account"></el-tab-pane>
+          <el-tab-pane label="管理员登录" name="administrator"></el-tab-pane>
         </el-tabs>
-        <el-form-item v-if="loginInfo.login_type == 'idcard'">
-          <el-input v-model="loginInfo.id_card" placeholder="身份证"/>
+        <el-form-item v-if="loginInfo.login_type == 'administrator'">
+          <el-input v-model="loginInfo.administrator_id" placeholder="管理员编号"/>
         </el-form-item>
         <el-form-item v-else>
           <el-input  v-model="loginInfo.account" placeholder="账户"/>
         </el-form-item>
         <el-form-item>
-          <el-input ref="pwd" v-model="loginInfo.pwd" placeholder="密码" type="password"/>
+          <el-input ref="password" v-model="loginInfo.password" placeholder="密码" type="password"/>
         </el-form-item>
         <div class="login-check">
           <el-checkbox v-model="remeberLoginStatus">记住密码</el-checkbox>
@@ -51,27 +51,17 @@
     <!-- 注册弹窗 -->
     <el-dialog title="注册" :visible.sync="showRegisterForm">
       <el-form ref="registerForm" :model="registerInfo" :rules="registerRules" label-width="80px" label-position="left">
-        <el-form-item label="账户" prop="account">
-          <el-input v-model="registerInfo.account"/>
+        <el-form-item label="用户名" prop="user_name">
+          <el-input v-model="registerInfo.user_name"/>
         </el-form-item>
-        <el-form-item label="密码" prop="pwd">
-          <el-input v-model="registerInfo.pwd"/>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="registerInfo.password"/>
         </el-form-item>
-        <el-form-item label="姓名" prop="name">
-          <el-input v-model="registerInfo.name"/>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="registerInfo.email"/>
         </el-form-item>
-        <el-form-item label="身份证" prop="id_card">
-          <el-input v-model="registerInfo.id_card"/>
-        </el-form-item>
-        <el-form-item label="电话" prop="telephone">
-          <el-input v-model="registerInfo.telephone"/>
-        </el-form-item>
-        <el-form-item label="性别" prop="sex">
-          <el-select v-model="registerInfo.sex" placeholder="请选择性别">
-            <el-option label="男" :value="1"></el-option>
-            <el-option label="女" :value="2"></el-option>
-          </el-select>
-        </el-form-item>
+        <el-form-item label="电话" prop="phone">
+          <el-input v-model="registerInfo.phone"/>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="showRegisterForm = false">取 消</el-button>
@@ -88,29 +78,25 @@
       return {
         loginInfo: {
           login_type: 'account',
-          id_card: '',
-          account: '',
-          pwd: ''
+          administrator_id: '',
+          user_name: '',
+          password: ''
         },
         // 自动登录
         remeberLoginStatus: true,
         // 注册
         showRegisterForm: false,
         registerInfo: {
-          id_card: '',
-          name: '',
-          account: '',
-          pwd: '',
-          sex: 1,
-          telephone: ''
+          user_name: '',
+          email: '',
+          password: '',
+          phone: ''
         },
         registerRules: {
-          id_card: [{ required: true, message: '请输入正确的身份证', min: 18, max: 18, trigger: 'blur' }],
-          name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-          account: [{ required: true, message: '请输入登录账户', trigger: 'blur' }],
-          pwd: [{ required: true, message: '密码格式有误', min: 6, trigger: 'blur' }],
-          sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
-          telephone: [{ required: true, message: '电话号格式有误', min: 11, max: 11, trigger: 'blur' }]
+          user_name: [{ required: true, message: '请输入正确的账户名', min: 18, max: 18, trigger: 'blur' }],
+          email: [{ required: true, message: '请输入正确的邮箱', trigger: 'blur' }],
+          password: [{ required: true, message: '密码格式有误', min: 6, trigger: 'blur' }],
+          phone: [{ required: true, message: '电话号格式有误', min: 11, max: 11, trigger: 'blur' }]
         }
       }
     },
@@ -126,8 +112,8 @@
     methods: {
       // 登陆
       onLogin() {
-        const { account, pwd } = this.loginInfo
-        if (!account || !pwd) {
+        const { account, password } = this.loginInfo
+        if (!account || !password) {
           this.NotifyFail('请输入账户、密码')
           return
         }

@@ -73,12 +73,12 @@ def adminEdit(request):
 def userLogin(request):
   # 获取参数
   login_type = request.POST.get('login_type') #user或者administrator
-  account = request.POST.get('account') #user account
+  user_name = request.POST.get('user_name') #user account
   administrator_id = request.POST.get('administrator_id')
   password = request.POST.get('password')
   if login_type=='user':
     # 根据account查询
-    checkUser = user_info.objects.filter(account=account).first()
+    checkUser = user_info.objects.filter(user_name=user_name).first()
     if not checkUser:
     # 用户不存在,则直接返回错误消息
       return Action.fail("用户不存在")
