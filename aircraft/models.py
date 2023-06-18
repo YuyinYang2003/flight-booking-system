@@ -153,7 +153,7 @@ class passenger_user(models.Model):
     passenger_identity_id = models.CharField(max_length=18) # 乘机人身份证号
 
     class Meta:
-        unique_together=("user_name","passenger_identity_id ")
+        unique_together=("user_name","passenger_identity_id")
         managed = False
-        db_table = 'order'
+        db_table = 'passenger_user'
 

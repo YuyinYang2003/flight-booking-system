@@ -70,7 +70,7 @@ def adminEdit(request):
 
 @api_view(['GET',"POST"])
 # 用户登录
-def Login(request):
+def userLogin(request):
   # 获取参数
   login_type = request.POST.get('login_type') #user或者administrator
   account = request.POST.get('account') #user account
