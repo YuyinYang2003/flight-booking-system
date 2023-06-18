@@ -44,6 +44,7 @@ urlpatterns = [
     path('userRegister', view_user.userRegister, name='userRegister'),
     path('userEdit', view_user.userEdit, name='userEdit'),
     path('userList', view_user.userList, name='userList'),
+    path('buyVIP', view_user.buyVIP, name='buyVIP'),
     #乘机人
     path('passengerRegister', view_user.passengerRegister, name='passengerRegister'),
     path('passengerBound', view_user.passengerBound, name='passengerBound'),
