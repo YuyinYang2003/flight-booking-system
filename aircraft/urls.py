@@ -35,6 +35,7 @@ urlpatterns = [
     path('user_flight/', views.user_flight),
     path('user_order/', views.user_order),
     path('user_user/', views.user_user),
+    path('user_passenger/', views.user_passenger),
 
     #数据请求
 
