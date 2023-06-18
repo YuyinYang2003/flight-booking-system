@@ -8,40 +8,215 @@ from django.db.models import Q
 
 @api_view(['GET',"POST"])
 # 添加订单
+def buyTicketAlter(p,s,type):
+  #买机票后的积分和价格变更
+  #type=0留学生，1会员，2非会员
+  if type==0:
+    if s<=p*1.1:
+      dp=s//1.1
+      p=p-dp
+      s=s-dp*1.1
+    else:
+      p=0
+      s=s-p*1.1
+    if s<=1000:
+      p=p+s//100
+    elif 1000<s and s<=5000:
+      p=p+10+(s-1000)//80
+    elif 5000<s and s<=12000:
+      p=p+60+(s-5000)//70
+    else:
+      p=p+160+(s-12000)//60
+  elif type==1:
+    if s<=p:
+      p=p-s
+      s=0
+    else:
+      p=0
+      s=s-p
+    if s<=1000:
+      p=p+s//100
+    elif 1000<s and s<=5000:
+      p=p+10+(s-1000)//80
+    else:
+      p=p+60+(s-5000)//70
+  else:
+    if s<=p*0.5:
+      p=p-2*s
+      s=0
+    else:
+      p=0
+      s=s-p*0.5
+    if s<=1200:
+      p=p+s//120
+    elif 1200<s and s<=6200:
+      p=p+10+(s-1200)//100
+    else:
+      p=p+60+(s-6200)//80
+  return [p,s]
+  
+@api_view(['GET',"POST"])
+# 添加订单
+# 点确认购买
 def orderAdd(request):
   # 获取参数
-  user_id = request.POST.get('user_id')
-  flight_num = request.POST.get('flight_num')
-  ticket_type = request.POST.get('ticket_type')
-  print('购票：', flight_num, ticket_type, user_id)
+  user_name = request.POST.get('user_name')
+  passenger_identity_id = request.POST.get('passenger_identity_id') #需要增加乘机人信息
+  flight_num1 = request.POST.get('flight_num1')
+  flight_num2 = request.POST.get('flight_num2') #两个航班显示在同一条订单记录里
+  set_class = request.POST.get('set_class') #0economy,1first,2business
+  flight_mode = request.POST.get('flight_mode') #0直飞，1转机
+  usePointOrNot = request.POST.get('usePointOrNot')
+  print('购票：', flight_num1, flight_num2, set_class, user_name, passenger_identity_id)
   # 查询航班
-  checkFlight = flight.objects.filter(flight_num=flight_num).first()
-  if checkFlight.ticket_remain == 0 :
-    return Action.fail("已售罄")
-  if ticket_type == '1':
-    seat_num_sum = checkFlight.ticket_total_first_class
-    cost = checkFlight.price_first_class
+  checkUserPassenger=passenger_user.objects.filter(user_name=user_name,passenger_identity_id=passenger_identity_id)
+  if checkUserPassenger.exists():
+    if flight_mode==0:
+      checkFlight = flight_city2.objects.filter(flight_num=flight_num1).first()
+      user=user_info.objects.filter(username=user_name).first()
+      passenger=passenger_info.objects.filter(passenger_identity_id=passenger_identity_id).first()
+      flight=flight_info.objects.filter(flight_num=flight_num1).first()
+      studentornot=passenger.passenger_type
+      if studentornot=='留学生':
+        user_type=0
+      else:
+        vipornot=user.user_type
+        if vipornot=='会员':
+          user_type=1
+        else:
+          user_type=2
+      point=user.point
+      if set_class == '0':
+        total_seat=airplane_info.objects.filter(aiplane_id=flight_num1).first().economy_set
+        remain_seat = checkFlight.current_ecnomy_set
+        if remain_seat==0:
+          return Action.fail("已售罄")
+        cost = checkFlight.economy_class_price
+        #更新余票
+        flight.current_ecnomy_set-=1
+        flight.save()
+      elif set_class == '1':
+        total_seat=airplane_info.objects.filter(aiplane_id=flight_num1).first().first_set
+        remain_seat = checkFlight.current_first_set
+        if remain_seat==0:
+          return Action.fail("已售罄")
+        cost = checkFlight.first_class_price
+        #更新余票
+        flight.current_first_set-=1
+        flight.save()
+      else:
+        total_seat=airplane_info.objects.filter(aiplane_id=flight_num1).first().bussiness_set
+        remain_seat = checkFlight.current_bussiness_set
+        if remain_seat==0:
+          return Action.fail("已售罄")
+        cost = checkFlight.business_class_price
+        #更新余票
+        flight.current_bussiness_set-=1
+        flight.save()
+      #生成座位号
+      if set_class==0:
+        seat_num = 'JJ' + str(total_seat-remain_seat + 1)
+      elif set_class==1:
+        seat_num='TD'+str(total_seat-remain_seat + 1)
+      else:
+        seat_num='SW'+str(total_seat-remain_seat + 1)
+      
+      #计算积分和价格变更
+      if usePointOrNot:
+        cost=buyTicketAlter(point,cost,user_type)[1]
+        point=buyTicketAlter(point,cost,user_type)[0]
+      
+      #生成订单
+      classl=['经济舱','头等舱','商务舱']
+      usepointl=['否','是']
+      newOrder=order_info(passenger_identity_id=passenger_identity_id,flight_num1=flight_num1,set_class1=classl[set_class],set_num1=seat_num,order_state='正常',point_use=usepointl[usePointOrNot],price=cost)
+      
+      #更新积分
+      user.point=point
+      user.save()
+      return Action.success()
+    else:
+      checkFlight = flight_result.objects.filter(Q(flight_num1=flight_num1)&Q(flight_num2=flight_num2)).first()
+      user=user_info.objects.filter(username=user_name).first()
+      passenger=passenger_info.objects.filter(passenger_identity_id=passenger_identity_id).first()
+      flight1=flight_info.objects.filter(flight_num=flight_num1).first()
+      flight2=flight_info.objects.filter(flight_num=flight_num2).first()
+      studentornot=passenger.passenger_type
+      if studentornot=='留学生':
+        user_type=0
+      else:
+        vipornot=user.user_type
+        if vipornot=='会员':
+          user_type=1
+        else:
+          user_type=2
+      point=user.point
+      if set_class == '0':
+        total_seat1=airplane_info.objects.filter(aiplane_id=flight_num1).first().economy_set
+        remain_seat1 = checkFlight.current_ecnomy_set1
+        total_seat2=airplane_info.objects.filter(aiplane_id=flight_num2).first().economy_set
+        remain_seat2 = checkFlight.current_ecnomy_set2
+        if remain_seat==0:
+          return Action.fail("已售罄")
+        cost = checkFlight.economy_class_price
+        #更新余票
+        flight1.current_ecnomy_set-=1
+        flight1.save()
+        flight2.current_ecnomy_set-=1
+        flight2.save()
+      elif set_class == '1':
+        total_seat1=airplane_info.objects.filter(aiplane_id=flight_num1).first().first_set
+        remain_seat1 = checkFlight.current_first_set1
+        total_seat2=airplane_info.objects.filter(aiplane_id=flight_num2).first().first_set
+        remain_seat2 = checkFlight.current_first_set2
+        if remain_seat==0:
+          return Action.fail("已售罄")
+        cost = checkFlight.first_class_price
+        #更新余票
+        flight1.current_first_set-=1
+        flight1.save()
+        flight2.current_first_set-=1
+        flight2.save()
+      else:
+        total_seat1=airplane_info.objects.filter(aiplane_id=flight_num1).first().bussiness_set
+        remain_seat1 = checkFlight.current_bussiness_set1
+        total_seat2=airplane_info.objects.filter(aiplane_id=flight_num1).first().bussiness_set
+        remain_seat2 = checkFlight.current_bussiness_set2
+        if remain_seat==0:
+          return Action.fail("已售罄")
+        cost = checkFlight.business_class_price
+        #更新余票
+        flight1.current_bussiness_set-=1
+        flight1.save()
+        flight2.current_bussiness_set-=1
+        flight2.save()
+      #生成座位号
+      if set_class==0:
+        seat_num1 = 'JJ' + str(total_seat1-remain_seat1 + 1)
+        seat_num2 = 'JJ' + str(total_seat2-remain_seat2 + 1)
+      elif set_class==1:
+        seat_num1='TD'+str(total_seat1-remain_seat1 + 1)
+        seat_num2='TD'+str(total_seat2-remain_seat2 + 1)
+      else:
+        seat_num1='SW'+str(total_seat1-remain_seat1 + 1)
+        seat_num2='SW'+str(total_seat2-remain_seat2 + 1)
+      
+      #计算积分和价格变更
+      if usePointOrNot:
+        cost=buyTicketAlter(point,cost,user_type)[1]
+        point=buyTicketAlter(point,cost,user_type)[0]
+      
+      #生成订单
+      classl=['经济舱','头等舱','商务舱']
+      usepointl=['否','是']
+      newOrder=order_info(passenger_identity_id=passenger_identity_id,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=classl[set_class],set_class2=classl[set_class],set_num1=seat_num1,set_num2=seat_num2,order_state='正常',point_use=usepointl[usePointOrNot],price=cost)
+      
+      #更新积分
+      user.point=point
+      user.save()
+      return Action.success()
   else:
-    seat_num_sum = checkFlight.ticket_total_economy_class
-    cost = checkFlight.price_economy_class
-  # 查询票
-  checkTickets = ticket.objects.filter(flight_id=flight_num, ticket_type=ticket_type)
-  if checkTickets.count() == seat_num_sum:
-    return Action.fail("已售罄")
-  if ticket_type == '1':
-    seat_num = 'TD' + str(checkTickets.count() + 1)
-  else:
-    seat_num = 'JJ' + str(checkTickets.count() + 1)
-  # 生成票
-  newTicket = ticket(corp=checkFlight.corp, flight_id=flight_num, user_id=user_id, ticket_type=ticket_type, boarding_time=checkFlight.depart_time, seat_num=seat_num, port=checkFlight.port)
-  newTicket.save()
-  # 生成订单
-  newOrder = order(user_id=user_id, flight_id=flight_num, ticket_id=newTicket.id, cost=cost, status=2)
-  newOrder.save()
-  # 更新航班余票
-  checkFlight.ticket_remain -= 1
-  checkFlight.save()
-  return Action.success()
+    Action.fail("未绑定乘机人")
 
 # 列表
 def orderList(request):
