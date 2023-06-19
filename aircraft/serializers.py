@@ -19,7 +19,7 @@ class AdminSerializer(serializers.HyperlinkedModelSerializer):
 class Passenger_infoSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = passenger_info
-        fields = ['passenger_identity_id',  'passenger_name', 'phone', 'sex','birthdate','passport','passenger_type']
+        fields = ['passenger_identity_id',  'passenger_name', 'passenger_phone', 'sex','birthdate','passport','passenger_type']
 
 # 飞机
 class Airplane_infoSerializer(serializers.HyperlinkedModelSerializer):
@@ -55,7 +55,7 @@ class Order_infoSerializer(serializers.HyperlinkedModelSerializer):
 class Passenger_userSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = passenger_user
-        fields = ['user_name', 'passenger_identity_id']
+        fields = ['passenger_user_key','user_name', 'passenger_identity_id']
 
 #有转机的路线信息
 class MultiFlightSerializer(serializers.HyperlinkedModelSerializer):
