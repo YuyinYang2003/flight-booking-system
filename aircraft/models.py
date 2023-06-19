@@ -101,7 +101,7 @@ class flight_info(models.Model):
 
 # 收藏
 class favorites(models.Model):
-    favorite_id = models.SmallIntegerField() # 收藏号
+    favorite_id = models.AutoField(primary_key=True) # 唯一标识的收藏号
     user_name = models.CharField(max_length=30) # 收藏的用户名
     flight_num1 = models.CharField(max_length=30) # 航班号1
     flight_num2 = models.CharField(max_length=30) # 航班号2
@@ -156,6 +156,7 @@ class order_info(models.Model):
 
 # 用户乘机人绑定
 class passenger_user(models.Model):
+    passenger_user_key = models.AutoField(primary_key=True) # 唯一的用户乘机人绑定号
     user_name = models.CharField(max_length=30) # 用户名
     passenger_identity_id = models.CharField(max_length=18) # 乘机人身份证号
 
