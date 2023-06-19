@@ -81,21 +81,23 @@ def flightAdd(request):
   # 添加成功
   return Action.success()
 
-#这一段没改完，得改完view_ticket再改
+
+
 
 @api_view(['GET',"POST"])
 # 发送延误
 def flightDelay(request):
-  # 获取参数
-  airplane_num = request.POST.get('airplane_num')
-  #改成了通过真实世界的航班号来查询
-  # 查询
-  checkFlight = flight_info.objects.filter(airplane_num=airplane_num)
+  # 获取延误的这一趟飞行的航班号（唯一标识一趟飞行的）
+  flight_num = request.POST.get('flight_num')
+  #查询检索航班号是否存在
+  checkFlight = flight_info.objects.filter(flight_num=flight_num)
   if checkFlight.exists() == False :
     return Action.fail("航班不存在")
-  checkFlight = checkFlight.first()
-  ticketList = ticket.objects.filter(flight_id=checkFlight.flight_num)
-  for item in ticketList:
-    item.message = '该航班已延误'
-    item.save()
-  return Action.success()
+  # 存在则查询含有这趟航班的订单
+  else:
+    checkFlight = checkFlight.first()
+    ticketList = order_info.objects.filter(Q(flight_num1=flight_num)|Q(flight_num2=flight_num)) #中转订单任何一个取消都算取消
+    for item in ticketList:
+      item.order_status = '该航班已取消'  #修改订单状态
+      item.save()
+    return Action.success()

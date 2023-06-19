@@ -28,19 +28,22 @@ class administrator_info(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'administrator_info'
+        db_table = 'administrator'
 
 #乘机人信息类
 class passenger_info(models.Model):
     passenger_identity_id = models.CharField(primary_key=True, max_length=18) # 乘机人身份证号
     passenger_name = models.CharField(max_length=10) # 姓名
     phone = models.CharField(max_length=15) # 电话号码
-    sex = models.SmallIntegerField() # 性别0男1女
-    birthdate = models.DateField() # 出生日期
+    passenger_sex_choice={
+        ('男'),
+        ('女')
+    }
+    sex =django_mysql.models.EnumField(choices=passenger_sex_choice) # 乘机人性别
     passport = models.CharField(max_length=10) # 护照号码
     passenger_type_choice={
-        ('留学生','普通乘客'),
-        ('会员')
+        ('留学生'),
+        ('普通乘客')
     }
     passenger_type =django_mysql.models.EnumField(choices=passenger_type_choice) # 普通乘客/留学生
     
@@ -52,7 +55,7 @@ class passenger_info(models.Model):
 class airplane_info(models.Model):
     airplane_id = models.CharField(primary_key=True, max_length=10) # 唯一飞机id
     plane_type = models.CharField(max_length=10) # 飞机种类
-    company_set = models.CharField(max_length=10) # 所属航空公司id
+    company_id = models.CharField(max_length=10) # 所属航空公司id
     economy_set = models.SmallIntegerField() # 经济舱座位数量
     first_set = models.SmallIntegerField() # 头等舱座位数量
     bussiness_set = models.SmallIntegerField() # 公务舱座位数量
@@ -82,11 +85,15 @@ class flight_info(models.Model):
     arrive_airport = models.CharField(max_length=45) # 目的机场编号
     current_first_set = models.SmallIntegerField() # 头等舱剩余票数
     current_economy_set = models.SmallIntegerField() # 经济舱剩余票数
-    current_business_set = models.SmallIntegerField() # 公务舱剩余票数
+    current_bussiness_set = models.SmallIntegerField() # 公务舱剩余票数
     ecnomy_class_price = models.DecimalField(max_digits=6, decimal_places=0) # 经济舱票价
     first_class_price  = models.DecimalField(max_digits=6, decimal_places=0) # 头等舱票价
     bussiness_class_price  = models.DecimalField(max_digits=6, decimal_places=0) # 公务舱票价
-    baggage_info = models.CharField(max_length=50)#行李信息
+    baggage_choice={
+        ('0'),
+        ('1')
+    }
+    baggage_info =django_mysql.models.EnumField(choices=baggage_choice) # 含几件免费行李
  
     class Meta:
         managed = False
@@ -153,7 +160,7 @@ class passenger_user(models.Model):
     passenger_identity_id = models.CharField(max_length=18) # 乘机人身份证号
 
     class Meta:
-        unique_together=("user_name","passenger_identity_id")
+        unique_together=("user_name","passenger_identity_id ")
         managed = False
         db_table = 'passenger_user'
 
