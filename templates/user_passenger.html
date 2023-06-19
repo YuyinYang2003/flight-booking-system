@@ -64,7 +64,7 @@
   <el-dialog :visible.sync="showAddPassenegerForm">
     <el-form ref="addPassengerForm" :model="addPassengerInfo" :rules="PassengerRules" label-width="110px" label-position="left">
       <el-form-item label="姓名" prop="passenger_name">
-        <el-input v-model="addPassengerInfo.account"/>
+        <el-input v-model="addPassengerInfo.passenger_name"/>
       </el-form-item>
       <el-form-item label="身份证号" prop="passenger_identity_id">
         <el-input v-model="addPassengerInfo.passenger_identity_id"/>
@@ -104,7 +104,7 @@
           name: ''
         },
         // 添加
-        addUserFormType: 1,
+        addPassengerFormType: 1,
         showAddUserForm: false,
         addPassengerInfo: {
           passenger_identity_id: '',
@@ -125,12 +125,18 @@
       }
     },
     mounted() {
+      let userInfo = window.localStorage.getItem("aircraft_userInfo")
+      if (userInfo) {
+      userInfo = JSON.parse(userInfo)
+      document.getElementById('user-name').innerHTML = userInfo.user_name
+    }
+      this.userInfo = userInfo
       this.getPassengerList()
     },
     methods: {
       getPassengerList() {
         // 获取列表
-        axios.post(ToDJ('passengerList'), new URLSearchParams(this.addPassengerInfo)).then(res => {
+        axios.post(ToDJ('passengerList'), new URLSearchParams(this.userInfo)).then(res => {
           if (res.data.code === 0) {
             const list = res.data.data
             this.list = list 
