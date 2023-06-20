@@ -34,7 +34,7 @@ class administrator_info(models.Model):
 class passenger_info(models.Model):
     passenger_identity_id = models.CharField(primary_key=True, max_length=18) # 乘机人身份证号
     passenger_name = models.CharField(max_length=10) # 姓名
-    phone = models.CharField(max_length=15) # 电话号码
+    passenger_phone = models.CharField(max_length=15) # 电话号码
     passenger_sex_choice={
         ('男'),
         ('女')
@@ -161,7 +161,6 @@ class passenger_user(models.Model):
     passenger_identity_id = models.CharField(max_length=18) # 乘机人身份证号
 
     class Meta:
-        unique_together=("user_name","passenger_identity_id ")
         managed = False
         db_table = 'passenger_user'
 

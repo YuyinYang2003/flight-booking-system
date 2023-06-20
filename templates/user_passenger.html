@@ -10,13 +10,11 @@
   <div class="top-panel">
     <div class="panel-header">
       <div class="panel-title">乘机人列表</div>
-      <div class="panel-filter">
-        <el-input size="mini" prefix-icon="el-icon-search" v-model="queryInfo.name" placeholder="请输入姓名"></el-input>
-        <el-button size="mini" @click="getUserList">查询</el-button>
-      </div>
     </div>
     <div class="add-wrapper">
-      <el-button type="text" icon="el-icon-plus" style="color: #999; width: 100%;" @click="onAddUser">新建</el-button>
+      <el-button type="text" icon="el-icon-plus" style="color: #999; width: 100%;" @click="onAddPassenger">新建</el-button>
+      <el-button type="text" icon="el-icon-plus" style="color: #999; width: 100%;" @click="BoundPassenger">绑定</el-button>
+      <el-button type="text" icon="el-icon-plus" style="color: #999; width: 100%;" @click="DropPassenger">绑定</el-button>
     </div>
   </div>
 
@@ -43,8 +41,7 @@
       </el-table-column>
       <el-table-column
         prop="sex"
-        label="性别"
-        :formatter="onFormatterSex">
+        label="性别">
       </el-table-column>
       <el-table-column
         prop="passenger_type"
@@ -55,41 +52,55 @@
         width="140"
         align="center">
         <template slot-scope="{ row }">
-          <el-button type="text" @click="onEditUser(row)">编辑</el-button>
+          <el-button type="text" @click="onEditUser(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
   </div>
 
-  <el-dialog :visible.sync="showAddPassenegerForm">
+  <el-dialog :visible.sync="showAddPassengerForm">
     <el-form ref="addPassengerForm" :model="addPassengerInfo" :rules="PassengerRules" label-width="110px" label-position="left">
       <el-form-item label="姓名" prop="passenger_name">
-        <el-input v-model="addPassengerInfo.passenger_name"/>
+        <el-input :disabled="addPassengerFormType===2" v-model="addPassengerInfo.passenger_name"/>
       </el-form-item>
       <el-form-item label="身份证号" prop="passenger_identity_id">
-        <el-input v-model="addPassengerInfo.passenger_identity_id"/>
+        <el-input :disabled="addPassengerFormType===2" v-model="addPassengerInfo.passenger_identity_id"/>
       </el-form-item>
       <el-form-item label="联系电话" prop="passenger_phone">
-        <el-input v-model="addPassengerInfo.passenger_phone"/>
+        <el-input :disabled="addPassengerFormType===2" v-model="addPassengerInfo.passenger_phone"/>
       </el-form-item>
       <el-form-item label="证件号码" prop="passport">
-        <el-input v-model="addPassengerInfo.passport"/>
+        <el-input :disabled="addPassengerFormType===2" v-model="addPassengerInfo.passport"/>
       </el-form-item>
       <el-form-item label="乘机人类型" prop="passenger_type">
-        <el-select :disabled="addUserFormType===2" v-model="addPassengerInfo.passenger_type" placeholder="请选择乘机人类型">
-          <el-option label="普通乘客" :value="普通乘客"></el-option>
-          <el-option label="留学生" :value="留学生"></el-option>
+        <el-select :disabled="addPassengerFormType===2" v-model="addPassengerInfo.passenger_type" placeholder="请选择乘机人类型">
+          <el-option label="普通乘客" :value="'普通乘客'"></el-option>
+          <el-option label="留学生" :value="'留学生'"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="性别" prop="sex">
-        <el-select :disabled="addUserFormType===2" v-model="addPassengerInfo.sex" placeholder="请选择性别">
-          <el-option label="男" :value="男"></el-option>
-          <el-option label="女" :value="女"></el-option>
+        <el-select :disabled="addPassengerFormType===2" v-model="addPassengerInfo.sex" placeholder="请选择性别">
+          <el-option label="男" :value="'男'"></el-option>
+          <el-option label="女" :value="'女'"></el-option>
         </el-select>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button @click="onSubmitAddUser">添加</el-button>
+      <el-button @click="onSubmitAddPassenger">添 加</el-button>
+    </div>
+  </el-dialog>
+
+  <el-dialog :visible.sync="showBoundPassengerForm">
+    <el-form ref="addPassengerForm" :model="addPassengerInfo" :rules="BoundRules" label-width="110px" label-position="left">
+      <el-form-item label="身份证号" prop="passenger_identity_id">
+        <el-input v-model="addPassengerInfo.passenger_identity_id"/>
+      </el-form-item>
+      <el-form-item label="姓名" prop="passenger_name">
+        <el-input v-model="addPassengerInfo.passenger_name"/>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="onBoundPassenger">添 加</el-button>
     </div>
   </el-dialog>
 </div>
@@ -105,22 +116,27 @@
         },
         // 添加
         addPassengerFormType: 1,
-        showAddUserForm: false,
+        showAddPassengerForm: false,
+        showBoundPassengerForm: false,
         addPassengerInfo: {
           passenger_identity_id: '',
           passenger_name: '',
           passenger_phone: '',
           passenger_type: '',
-          sex: 1,
+          sex: '',
           passport: ''
         },
         PassengerRules: {
           passenger_identity_id: [{ required: true, message: '请输入18位身份证号', min: 18, max: 18, trigger: 'blur' }],
           passenger_name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
           passport: [{ required: true, message: '请输入证件号码', trigger: 'blur' }],
-          passenger_type: [{ required: true, message: '请选择乘机人类型', trigger: 'change' }],
-          sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
+          passenger_type: [{ required: true, message: '请选择乘机人类型', trigger: 'input' }],
+          sex: [{ required: true, message: '请选择性别', trigger: 'input' }],
           passenger_phone: [{ required: true, message: '请输入11位电话', min: 11, max: 11, trigger: 'blur' }]
+        },
+        BoundRules: {
+          passenger_identity_id: [{ required: true, message: '请输入18位身份证号', min: 18, max: 18, trigger: 'blur' }],
+          passenger_name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
         }
       }
     },
@@ -146,30 +162,65 @@
         })
       },
       // 点击添加
-      onAddUser() {
-        this.addUserFormType = 1
-        this.addUserInfo = {
-          id_card: '',
-          name: '',
-          account: '',
-          pwd: '',
-          sex: 1,
-          telephone: ''
+      onAddPassenger() {      
+        this.addPassengerInfo = {
+          passenger_identity_id: '',
+          passenger_name: '',
+          passenger_phone: '',
+          passenger_type: '',
+          sex: '',
+          passport: '' 
         }
-        this.showAddUserForm = true
+        this.showBoundPassengerForm = true
+      },
+      // 点击绑定
+      BoundPassenger() {
+        this.addPassengerInfo = {
+          passenger_identity_id: '',
+          passenger_name: '',
+          passenger_phone: '',
+          passenger_type: '',
+          sex: '',
+          passport: '' 
+        }
+        this.showBoundPassengerForm = true
       },
       // 提交添加
-      onSubmitAddUser() {
-        this.$refs.addUserForm.validate((valid) => {
+      onSubmitAddPassenger() {
+        const combinedData = Object.assign({}, this.addPassengerInfo, this.userInfo);
+        this.$refs.addPassengerForm.validate((valid) => {
           if (valid) {
             // 新添加
-            if (this.addUserFormType === 1) {
-              axios.post(ToDJ('userRegister'), new URLSearchParams(this.addUserInfo)).then(res => {
+            if (this.addPassengerFormType === 1) {
+              axios.post(ToDJ('passengerRegister'), new URLSearchParams(combinedData)).then(res => {
                 if (res.data.code === 0) {
                   this.NotifySuc("添加成功")
-                  this.showAddUserForm = false
-                  this.getUserList()
-                } else {
+                  this.showBoundPassengerForm = false
+                  this.getPassengerList()
+                } 
+                else {
+                  this.NotifyFail(res.data.data)
+                }
+              })
+            }
+          }
+        })
+      },
+      // 提交绑定
+      onBoundPassenger() {
+        const combinedData = Object.assign({}, this.addPassengerInfo, this.userInfo);
+        this.$refs.addPassengerForm.validate((valid) => {
+          if (valid) {
+            // 新添加
+            if (this.addPassengerFormType === 1) {
+              axios.post(ToDJ('passengerBound'), new URLSearchParams(combinedData)).then(res => {
+                if (res.data.code === 0) {
+                  this.NotifySuc("绑定成功")
+                  this.showBoundPassengerForm = false
+                  this.getPassengerList()
+                  this.addPassenegerFormType=1
+                } 
+                else {
                   this.NotifyFail(res.data.data)
                 }
               })
@@ -181,7 +232,7 @@
       onEditUser(row) {
         // const { id_card, name, account, pwd, sex, telephone } = row
         this.addUserInfo = row
-        this.addUserFormType = 2
+        this.addPassengerFormType = 2
         this.showAddUserForm = true
       },
       // 性别格式化

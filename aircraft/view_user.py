@@ -42,6 +42,8 @@ def passengerRegister(request):
     # 若没注册，添加入数据库
     newPassenger = passenger_info(passenger_identity_id=passenger_identity_id, passenger_name=passenger_name, sex=sex, passenger_phone=passenger_phone, passport=passport, passenger_type=passenger_type)
     newPassenger.save()
+    newPassengerUser = passenger_user(user_name=user_name, passenger_identity_id=passenger_identity_id)
+    newPassengerUser.save()
     return Action.success()
 
 @api_view(['GET',"POST"])
@@ -49,16 +51,22 @@ def passengerRegister(request):
 def passengerBound(request):
   user_name = request.POST.get('user_name')
   passenger_identity_id = request.POST.get('passenger_identity_id')
+  passenger_name=request.POST.get('passenger_name')
   # 查询乘机人是否被该用户绑定
   checkIdentityUser = passenger_user.objects.filter(Q(passenger_identity_id=passenger_identity_id)&Q(user_name=user_name))
+  checkNameUser = passenger_info.objects.filter(Q(passenger_identity_id=passenger_identity_id)&Q(passenger_name=passenger_name))
   if checkIdentityUser.exists() == True :
     # 如果已经被注册,则直接返回错误消息
     return Action.fail("乘机人已被绑定")
   else:
-  # 若没注册，添加入数据库
-    newPassengerUser = passenger_user(user_name=user_name, passenger_identity_id=passenger_identity_id)
-    newPassengerUser.save()
-    return Action.success()
+    # 如果姓名不匹配,则返回错误信息
+    if checkNameUser.exists() == False:
+      return Action.fail("乘机人身份证号和姓名不匹配")
+    else:
+    # 若没注册，添加入数据库
+      newPassengerUser = passenger_user(user_name=user_name, passenger_identity_id=passenger_identity_id)
+      newPassengerUser.save()
+      return Action.success()
 
 @api_view(['GET',"POST"])
 # 用户编辑
