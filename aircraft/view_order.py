@@ -329,7 +329,7 @@ def favourList(request):
   for item in list:
     temp_data = {}
     temp_data['favourite_id'] = item.favourite_id
-    #temp_data['flight_num1'] = item.flight_num1
+    temp_data['flight_num1'] = item.flight_num1
     temp_data['airplane_num1'] = flight_info.objects.filter(flight_num= item.flight_num1).first().airplane_num
     temp_data['set_class1']=item.set_class1
     temp_data['total_price'] = item.total_price
@@ -365,3 +365,18 @@ def returnmoney(request):
   checkOrder.order_status = '已退款'  #修改订单状态
   checkOrder.save()
   return Action.success()
+
+@api_view(['GET',"POST"])
+# 收藏的删除
+def FavoriteDrop(request):
+  favorite_id = request.POST.get('favorite_id')
+  user_name=request.POST.get('user_name')
+  # 查询该收藏是否被当前用户添加到收藏信息中
+  checkfavorite_id = favorites.objects.filter(Q(favorite_id=favorite_id)|Q(user_name=user_name))
+  if checkfavorite_id.exists() == False :
+    # 如果该收藏没有被用户添加，则返回错误信息
+    return Action.fail("当前收藏不存在")
+  else:
+    # 若收藏已经被添加，则删除
+    checkfavorite_id.delete()
+    return Action.success()
