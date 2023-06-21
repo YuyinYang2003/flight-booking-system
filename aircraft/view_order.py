@@ -313,6 +313,29 @@ def favouriteAdd(request):
         newfavorite.save()
         return Action.success()
 
+# 订单列表
+def favourList(request):
+  #获取用户名信息
+  user_name = request.POST.get('user_name')
+  list = favorites.objects.all()
+  #如果获取到，筛选出该用户的订单
+  if user_name:
+    list = list.filter(user_name=user_name)
+  arr = []
+  #显示信息
+  for item in list:
+    temp_data = {}
+    temp_data['favourite_id'] = item.favourite_id
+    #temp_data['flight_num1'] = item.flight_num1
+    temp_data['airplane_num1'] = flight_info.objects.filter(flight_num= item.flight_num1).first().airplane_num
+    temp_data['set_class1']=item.set_class1
+    temp_data['total_price'] = item.total_price
+    temp_data['transfer_time'] = item.transfer_time
+    if item.flight_num2:
+      temp_data['airplane_num2'] = flight_info.objects.filter(flight_num= item.flight_num2).first().airplane_num
+      temp_data['set_class2']=item.set_class1
+    arr.append(temp_data)
+  return Action.success(arr)
 
 @api_view(['GET',"POST"])
 # 退票
