@@ -34,6 +34,7 @@ class flight_result(models.Model):
     current_first_set2 = models.SmallIntegerField() #航班二剩余头登舱座位
 
     class Meta:
+        managed=False
         db_table = 'flight_result'
 
 #单次查询
@@ -60,4 +61,5 @@ class flight_city2(models.Model):
     depart_time_zones = models.SmallIntegerField()#出发地时区
     arrive_time_zones = models.SmallIntegerField()#到达地时区
     class Meta:
+        managed=False
         db_table = 'flight_city2'

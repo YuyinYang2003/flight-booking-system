@@ -28,7 +28,7 @@ class administrator_info(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'administrator'
+        db_table = 'administrator_info'
 
 #乘机人信息类
 class passenger_info(models.Model):
