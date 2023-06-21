@@ -91,7 +91,8 @@
                 this.NotifySuc("修改成功")
                 window.localStorage.setItem("aircraft_userInfo", JSON.stringify(res.data.data))
                 console.log(res.data.data)
-                document.getElementById('user_name').innerHTML = res.data.data.name
+                document.getElementById('user-name').innerHTML = res.data.data.name
+                this.getUserInfo()
               } else {
                 this.NotifyFail(res.data.data)
               }
