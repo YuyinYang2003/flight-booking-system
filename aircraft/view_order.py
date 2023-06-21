@@ -130,6 +130,7 @@ def orderAdd(request):
       classl=['经济舱','头等舱','公务舱']
       usepointl=['否','是']
       newOrder=order_info(passenger_identity_id=passenger_identity_id,flight_num1=flight_num1,set_class1=classl[set_class],set_num1=seat_num,order_state='正常',point_use=usepointl[usePointOrNot],price=cost)
+      newOrder.save()
       
       #更新积分
       user.point=point
@@ -210,6 +211,7 @@ def orderAdd(request):
       classl=['经济舱','头等舱','公务舱']
       usepointl=['否','是']
       newOrder=order_info(passenger_identity_id=passenger_identity_id,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=classl[set_class],set_class2=classl[set_class],set_num1=seat_num1,set_num2=seat_num2,order_state='正常',point_use=usepointl[usePointOrNot],price=cost)
+      newOrder.save()
       
       #更新积分
       user.point=point
