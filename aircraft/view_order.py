@@ -313,6 +313,7 @@ def favouriteAdd(request):
         newfavorite.save()
         return Action.success()
 
+@api_view(['GET',"POST"])
 # 订单列表
 def favourList(request):
   #获取用户名信息
