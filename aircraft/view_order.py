@@ -327,7 +327,7 @@ def favourList(request):
   for item in list:
     temp_data = {}
     temp_data['favourite_id'] = item.favourite_id
-    #temp_data['flight_num1'] = item.flight_num1
+    temp_data['flight_num1'] = item.flight_num1
     temp_data['airplane_num1'] = flight_info.objects.filter(flight_num= item.flight_num1).first().airplane_num
     temp_data['set_class1']=item.set_class1
     temp_data['total_price'] = item.total_price
