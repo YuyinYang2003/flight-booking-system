@@ -56,7 +56,7 @@ def passengerBound(request):
   checkIdentityUser = passenger_user.objects.filter(Q(passenger_identity_id=passenger_identity_id)&Q(user_name=user_name))
   checkNameUser = passenger_info.objects.filter(Q(passenger_identity_id=passenger_identity_id)&Q(passenger_name=passenger_name))
   if checkIdentityUser.exists() == True :
-    # 如果已经被注册,则直接返回错误消息
+    # 如果已经被绑定,则直接返回错误消息
     return Action.fail("乘机人已被绑定")
   else:
     # 如果姓名不匹配,则返回错误信息
@@ -210,3 +210,18 @@ def buyVIP(request):
   else:
     # 若本来就是
     return Action.fail("已是会员")
+  
+@api_view(['GET',"POST"])
+# 乘机人绑定的修改删除
+def passengerBoundDrop(request):
+  user_name = request.POST.get('user_name')
+  passenger_identity_id = request.POST.get('passenger_identity_id')
+  # 查询乘机人是否被该用户绑定
+  checkIdentityUser = passenger_user.objects.filter(Q(passenger_identity_id=passenger_identity_id)&Q(user_name=user_name))
+  if checkIdentityUser.exists() == False :
+    # 如果乘机人没有被绑定,则直接返回错误消息
+    return Action.fail("乘机人未被当前用户绑定")
+  else:
+    # 若已被绑定，则删除
+    checkIdentityUser.delete()
+    return Action.success()
