@@ -117,12 +117,12 @@ def adminEdit(request):
 # 乘机人编辑
 def passengerEdit(request):
   # 获取参数
-  passenger_identy_id=request.POST.get('passenger_identity_id')
+  passenger_identity_id=request.POST.get('passenger_identity_id')
   passenger_phone = request.POST.get('passenger_phone')
   passport = request.POST.get('passport')
   passenger_type = request.POST.get('passenger_type')
   # 查询是否存在
-  checkPassenger = passenger_info.objects.filter(Q(passenger_identy_id=passenger_identy_id))
+  checkPassenger = passenger_info.objects.filter(Q(passenger_identity_id=passenger_identity_id))
   if checkPassenger.exists() == True :
     # 如果存在则开始更改
     newpassenger = checkPassenger.first()

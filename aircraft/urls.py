@@ -50,6 +50,7 @@ urlpatterns = [
     path('passengerBound', view_user.passengerBound, name='passengerBound'),
     path('passengerEdit', view_user.passengerEdit, name='passengerEdit'),
     path('passengerList', view_user.passengerList, name='passengerList'),
+    path('passengerBoundDrop', view_user.passengerBoundDrop, name='passengerBoundDrop'),
     #航班
     path('flightList', view_flight.flightList, name='flightList'),
     path('flightAdd', view_flight.flightAdd, name='flightAdd'),

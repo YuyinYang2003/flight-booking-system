@@ -19,7 +19,7 @@ class AdminSerializer(serializers.HyperlinkedModelSerializer):
 class Passenger_infoSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = passenger_info
-        fields = ['passenger_identity_id',  'passenger_name', 'passenger_phone', 'sex','birthdate','passport','passenger_type']
+        fields = ['passenger_identity_id',  'passenger_name', 'passenger_phone', 'sex','passport','passenger_type']
 
 # 飞机
 class Airplane_infoSerializer(serializers.HyperlinkedModelSerializer):
