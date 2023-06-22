@@ -41,7 +41,7 @@ def passengerRegister(request):
     return Action.fail("乘机人已被注册，可直接绑定，不可重复注册")
   else:
     # 若没注册，添加入数据库
-    newPassenger = passenger_info(passenger_identity_id=passenger_identity_id, passenger_name=passenger_name, sex=sex, passenger_phone=passenger_phone, passport=passport, passenger_type=passenger_type)
+    newPassenger = passenger_info(passenger_identity_id=passenger_identity_id, passenger_name=passenger_name, sex=sex, phone=passenger_phone, passport=passport, passenger_type=passenger_type)
     newPassenger.save()
     newPassengerUser = passenger_user(user_name=user_name, passenger_identity_id=passenger_identity_id)
     newPassengerUser.save()
@@ -228,7 +228,7 @@ def passengerList(request):
     passenger=passenger_info.objects.filter(passenger_identity_id=item.passenger_identity_id).first()
     temp_data['passenger_name'] = passenger.passenger_name 
     temp_data['sex'] = passenger.sex
-    temp_data['passenger_phone'] = passenger.passenger_phone
+    temp_data['passenger_phone'] = passenger.phone
     temp_data['passport'] = passenger.passport
     temp_data['passenger_type'] = passenger.passenger_type
     arr.append(temp_data)

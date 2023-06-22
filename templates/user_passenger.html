@@ -301,7 +301,7 @@
         this.addPassengerFormType = 2
         this.showDropPassengerForm = true
       },
-      // 提交删除
+      // 提交修改
       onEditAddPassenger() {
         const combinedData = Object.assign({}, this.addPassengerInfo, this.userInfo);
         this.$refs.addPassengerForm.validate((valid) => {
@@ -328,13 +328,13 @@
         this.addPassengerFormType = 2
         this.showEditPassengerForm = true
       },
-      // 提交修改
-      onEditBoundDrop() {
+      // 提交删除
+      onpassengerBoundDrop() {
         const combinedData = Object.assign({}, this.addPassengerInfo, this.userInfo);
         this.$refs.addPassengerForm.validate((valid) => {
           if (valid) {
             // 新删除
-              axios.post(ToDJ('passengerBoundDrop'), new URLSearchParams(this.addPassengerInfo)).then(res => {
+              axios.post(ToDJ('passengerBoundDrop'), new URLSearchParams(combinedData)).then(res => {
                 if (res.data.code === 0) {
                   this.NotifySuc("删除成功")
                   this.showDropPassengerForm = false

@@ -99,8 +99,8 @@
         width="150"
         align="center">
         <template slot-scope="{ row }">
-          <el-button v-if="row.ticket_remain > 0" type="text" @click="onChossFlight(row)">购票</el-button>
-          <el-button v-if="row.ticket_remain > 0" type="text" @click="onChossFlight(row)">收藏</el-button>
+          <el-button type="text" @click="onChossFlight(row)">购票</el-button>
+          <el-button type="text" @click="onChossFlight(row)">收藏</el-button>
         </template>
       </el-table-column>
     </el-table>
