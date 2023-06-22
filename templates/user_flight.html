@@ -194,11 +194,14 @@
       // 重置查询条件
       onRestQuery() {
         this.queryInfo = {
-          flight_num: '',
           depart: '',
           arrive: '',
-          depart_time: ''
-        }
+          depart_time: '',
+          price_low: '',
+          price_high: '',
+          baggage: '',
+          flight_mode: '均允许'
+        },
         this.getFlightList()
       },
       // 出发 到达 转换

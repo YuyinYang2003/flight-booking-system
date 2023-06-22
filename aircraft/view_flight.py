@@ -17,13 +17,15 @@ def flightList(request):
   depart = request.POST.get('depart')
   arrive = request.POST.get('arrive')
   depart_time = request.POST.get('depart_time')
-  baggage = request.POST.get('luggage') #只能筛选全都含免费行李/无筛选需求，要求全都含免费行李为1，无筛选需求为0
+  baggage = request.POST.get('baggage') #只能筛选全都含免费行李/无筛选需求，要求全都含免费行李为1，无筛选需求为0
   flight_mode = request.POST.get('flight_mode') #要么中转要么直飞，0直飞1中转2均可以，默认2
   arr = []
   if price_low:
     price_low=int(price_low)
   if price_high:
     price_high=int(price_high)
+  if baggage:
+    baggage=int(baggage)
   if flight_mode=='只中转' or flight_mode=='均允许':
     list = flight_result.objects.all()
     #筛选中价格筛选是只要三种价格一种在区间内，这个飞行方案就会出现
@@ -36,7 +38,7 @@ def flightList(request):
     if arrive:
       list = list.filter(arrive_city=arrive)
     if depart_time:
-      list = list.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
+      list = list.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d'),datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=+1)))
     if baggage:
       list = list.filter(Q(baggage_info1=1)&Q(baggage_info2=1))
     for item in list:
@@ -62,7 +64,6 @@ def flightList(request):
   if flight_mode=='只直达' or flight_mode=='均允许':
     list = flight_city2.objects.all()
     if price_low:
-      print(price_low)
       list = list.filter((Q(economy_class_price__gt=price_low)&~Q(current_economy_set=0))|(Q(first_class_price__gt=price_low)&~Q(current_first_set=0))|(Q(business_class_price__gt=price_low)&~Q(current_bussiness_set=0)))
     if price_high:
       list = list.filter((Q(economy_class_price__lt=price_high)&~Q(current_economy_set=0))|(Q(first_class_price__lt=price_high)&~Q(current_first_set=0))|(Q(business_class_price__lt=price_high)&~Q(current_bussiness_set=0)))
@@ -71,7 +72,7 @@ def flightList(request):
     if arrive:
       list = list.filter(arrive_city=arrive)
     if depart_time:
-      list = list.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
+      list = list.filter(depart_time__range=(datetime.strptime(depart_time, '%Y-%m-%d'),datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=+1)))
     if baggage:
       list = list.filter(baggage_info=1)
     for item in list:
