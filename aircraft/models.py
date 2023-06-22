@@ -143,7 +143,7 @@ class order_info(models.Model):
         ('退款申请'),
         ('已退款')
     }
-    order_status=django_mysql.models.EnumField(choices=status_choice)#订单状态
+    order_state=django_mysql.models.EnumField(choices=status_choice)#订单状态
     price= models.DecimalField(max_digits=8, decimal_places=2) # 实际支付金额
     point_choice={
         ('是'),

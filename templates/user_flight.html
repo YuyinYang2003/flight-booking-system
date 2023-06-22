@@ -204,7 +204,9 @@
           set_class: '',
           usePointOrNot: '',
           flight_num1: '',
-          flight_num2: ''
+          flight_num2: '',
+          airplane_num1: '',
+          airplane_num2: ''
         }
       }
     },
@@ -276,6 +278,8 @@
         this.flightinfo = row
         this.buyInfo.flight_num1 = this.flightinfo.flight_num1
         this.buyInfo.flight_num2 = this.flightinfo.flight_num2
+        this.buyInfo.airplane_num1 = this.flightinfo.airplane_num1
+        this.buyInfo.airplane_num2 = this.flightinfo.airplane_num2
         if (this.flightinfo.flight_num2 !== undefined && this.flightinfo.flight_num2 !== null && this.flightinfo.flight_num2 !== ''){
           this.buyInfo.flight_mode = 1
         }
