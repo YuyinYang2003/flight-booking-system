@@ -237,7 +237,7 @@
           sex: '',
           passport: '' 
         }
-        this.showBoundPassengerForm = true
+        this.showAddPassengerForm = true
       },
       // 点击绑定
       BoundPassenger() {
@@ -261,7 +261,7 @@
               axios.post(ToDJ('passengerRegister'), new URLSearchParams(combinedData)).then(res => {
                 if (res.data.code === 0) {
                   this.NotifySuc("添加成功")
-                  this.showBoundPassengerForm = false
+                  this.showAddPassengerForm = false
                   this.getPassengerList()
                 } 
                 else {
@@ -306,7 +306,7 @@
         const combinedData = Object.assign({}, this.addPassengerInfo, this.userInfo);
         this.$refs.addPassengerForm.validate((valid) => {
           if (valid) {
-            // 新删除
+            // 新修改
               axios.post(ToDJ('passengerEdit'), new URLSearchParams(combinedData)).then(res => {
                 if (res.data.code === 0) {
                   this.NotifySuc("修改成功")
