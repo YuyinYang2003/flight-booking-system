@@ -48,6 +48,24 @@ def passengerRegister(request):
     return Action.success()
 
 @api_view(['GET',"POST"])
+# 管理员编辑乘机人
+def adminEditpassenger(request):
+  # 获取要编辑的乘机人身份证号,获取要改变的信息
+  passenger_identity_id = request.POST.get('passenger_identity_id')
+  passenger_type = request.POST.get('passenger_type')
+  # 查询是否存在
+  checkPassenger = passenger_info.objects.filter(Q(passenger_identity_id=passenger_identity_id))
+  if checkPassenger.exists() == True :
+    # 如果存在则开始更改
+    newpassenger = checkPassenger.first()
+    newpassenger.passenger_type=passenger_type
+    newpassenger.save()
+    return Action.success(Passenger_infoSerializer(newpassenger, many = False).data)
+  else:
+    # 若没注册
+    return Action.fail("乘机人不存在")
+
+@api_view(['GET',"POST"])
 # 乘机人绑定
 def passengerBound(request):
   user_name = request.POST.get('user_name')
@@ -220,7 +238,8 @@ def userList(request):
 def passengerList(request):
   user_name = request.POST.get('user_name')
   list = passenger_user.objects.all()
-  list = list.filter(user_name=user_name)
+  if user_name:
+    list = list.filter(user_name=user_name)
   arr = []
   for item in list:
     temp_data = {}
