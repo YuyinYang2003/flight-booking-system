@@ -64,6 +64,8 @@ urlpatterns = [
     path('ticketList', view_ticket.ticketList, name='ticketList'),
     # 管理员
     path('adminEdit', view_user.adminEdit, name='adminEdit'),
-
-
+    path('adminEdituser', view_user.adminEdituser, name='adminEdituser'),
+    path('Deletepassenger', view_user.Deletepassenger, name='Deletepassenger'),
+    path('Deleteuser', view_user.Deleteuser, name='Deleteuser'),
+    path('adminCreateuser', view_user.adminCreateuser, name='adminCreateuser'),
 ]

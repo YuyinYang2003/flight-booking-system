@@ -114,6 +114,25 @@ def adminEdit(request):
     return Action.fail("管理员不存在")
 
 @api_view(['GET',"POST"])
+# 管理员创建用户
+def adminCreateuser(request):
+  user_name = request.POST.get('user_name')
+  password = request.POST.get('password')
+  phone = request.POST.get('phone')
+  email = request.POST.get('email')
+  user_type = request.POST.get('user_type')
+  point = request.POST.get('point')
+  # 查询身份证号是否已被注册
+  checkUser = user_info.objects.filter(Q(user_name=user_name))
+  if checkUser.exists() == True :
+    # 如果已经被注册,则直接返回错误消息
+    return Action.fail("账户已被注册")
+  # 若没注册，添加入数据库
+  newUser = user_info(user_name=user_name, password=password, phone=phone, email=email, user_type=user_type, point=point)
+  newUser.save()
+  return Action.success()
+
+@api_view(['GET',"POST"])
 # 管理员编辑用户
 def adminEdituser(request):
   # 获取要编辑的用户名,获取要改变的信息

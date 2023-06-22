@@ -55,40 +55,101 @@
         align="center">
         <template slot-scope="{ row }">
           <el-button type="text" @click="onEditUser(row)">编辑</el-button>
+          <el-button type="text" style="color: #e01111;" @click="passengerBoundDrop(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
-  </div>
+
 
   <el-dialog :visible.sync="showAddUserForm">
     <el-form ref="addUserForm" :model="addUserInfo" :rules="userRules" label-width="110px" label-position="left">
-      <el-form-item label="账户" prop="account">
-        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.account"/>
+      <el-form-item label="账户名" prop="user_name">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.user_name"/>
       </el-form-item>
       <el-form-item label="密码" prop="pwd">
-        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.pwd"/>
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.password"/>
       </el-form-item>
-      <el-form-item label="姓名" prop="name">
-        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.name"/>
+      <el-form-item label="联系电话" prop="telephone">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.phone"/>
       </el-form-item>
-      <el-form-item label="身份证" prop="id_card">
-        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.id_card"/>
+      <el-form-item label="联系邮件" prop="email">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.email"/>
       </el-form-item>
-      <el-form-item label="电话" prop="telephone">
-        <el-input v-model="addUserInfo.telephone"/>
-      </el-form-item>
-      <el-form-item label="性别" prop="sex">
-        <el-select :disabled="addUserFormType===2" v-model="addUserInfo.sex" placeholder="请选择性别">
-          <el-option label="男" :value="1"></el-option>
-          <el-option label="女" :value="2"></el-option>
+      <el-form-item label="账户类型" prop="user_type">
+        <el-select :disabled="addPassengerFormType===2" v-model="addUserInfo.user_type">
+          <el-option label="非会员" :value="'非会员'"></el-option>
+          <el-option label="会员" :value="'会员'"></el-option>
         </el-select>
+      </el-form-item>
+      <el-form-item label="账户积分" prop="point">
+        <el-input v-model="addUserInfo.point"/>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button @click="onSubmitAddUser">添加</el-button>
     </div>
   </el-dialog>
-</div>
+
+  <el-dialog :visible.sync="showEditUserForm">
+    <el-form ref="addUserForm" :model="addUserInfo" :rules="userRules" label-width="110px" label-position="left">
+      <el-form-item label="账户名" prop="user_name">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.user_name"/>
+      </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.password"/>
+      </el-form-item>
+      <el-form-item label="联系电话" prop="telephone">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.phone"/>
+      </el-form-item>
+      <el-form-item label="联系邮件" prop="email">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.email"/>
+      </el-form-item>
+      <el-form-item label="账户类型" prop="user_type">
+        <el-select :disabled="addPassengerFormType===2" v-model="addUserInfo.user_type">
+          <el-option label="非会员" :value="'非会员'"></el-option>
+          <el-option label="会员" :value="'会员'"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="账户积分" prop="point">
+        <el-input v-model="addUserInfo.point"/>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="onEditAddUser">修改</el-button>
+    </div>
+  </el-dialog>
+
+  <el-dialog :visible.sync="showDropUserForm">
+    <el-form ref="addUserForm" :model="addUserInfo" :rules="userRules" label-width="110px" label-position="left">
+      <el-form-item label="账户名" prop="user_name">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.user_name"/>
+      </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.password"/>
+      </el-form-item>
+      <el-form-item label="联系电话" prop="telephone">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.phone"/>
+      </el-form-item>
+      <el-form-item label="联系邮件" prop="email">
+        <el-input :disabled="addUserFormType===2" v-model="addUserInfo.email"/>
+      </el-form-item>
+      <el-form-item label="账户类型" prop="user_type">
+        <el-select :disabled="addPassengerFormType===2" v-model="addUserInfo.user_type">
+          <el-option label="非会员" :value="'非会员'"></el-option>
+          <el-option label="会员" :value="'会员'"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="账户积分" prop="point">
+        <el-input v-model="addUserInfo.point"/>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button style="color: #e01111;" @click="onpassengerBoundDrop">确认删除</el-button>
+    </div>
+  </el-dialog>
+</div>>
+
+
 {% endverbatim %}
 <script>
   new Vue({
@@ -102,30 +163,56 @@
         // 添加
         addUserFormType: 1,
         showAddUserForm: false,
+        showDropUserForm: false,
+        showEditUserForm: false,
         addUserInfo: {
-          id_card: '',
-          name: '',
-          account: '',
-          pwd: '',
-          sex: 1,
-          telephone: ''
+          user_name: '',
+          password: '',
+          phone: '',
+          e_mail: '',
+          user_type: '',
+          point: ''
+        },
+        EditUserInfo: {
+          user_name: '',
+          password: '',
+          phone: '',
+          e_mail: '',
+          user_type: '',
+          point: ''
+        },
+        queryInfo:{
+            user_name: '',
+            password: '',
+            phone: '',
+            e_mail: '',
+            user_type: '',
+            point: ''
         },
         userRules: {
-          id_card: [{ required: true, message: '请输入身份证', trigger: 'blur' }],
-          name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-          account: [{ required: true, message: '请输入登录账户', trigger: 'blur' }],
-          pwd: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-          sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
-          telephone: [{ required: true, message: '电话号格式有误', min: 11, max: 11, trigger: 'blur' }]
+          user_name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+          password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+          phone: [{ required: true, message: '请输入电话',min: 11, max: 11, trigger: 'blur' }],
+          email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
+          user_type: [{ required: true, message: '请选择用户类型', trigger: 'change' }],
+          point: [{ required: true, message: '请输入积分', min: 0, trigger: 'blur' }]
         }
       }
     },
     mounted() {
-      this.getUserList()
+    let userInfo = window.localStorage.getItem("aircraft_userInfo")
+    if (userInfo) {
+      userInfo = JSON.parse(userInfo)
+      document.getElementById('user-name').innerHTML = userInfo.administrator_id
+    }
+    this.getUserList()
     },
     methods: {
       getUserList() {
         // 获取列表
+        if (!this.queryInfo.user_name) {
+          this.queryInfo.user_name = ''
+        }
         axios.post(ToDJ('userList'), new URLSearchParams(this.queryInfo)).then(res => {
           if (res.data.code === 0) {
             const list = res.data.data
@@ -139,12 +226,12 @@
       onAddUser() {
         this.addUserFormType = 1
         this.addUserInfo = {
-          id_card: '',
-          name: '',
-          account: '',
-          pwd: '',
-          sex: 1,
-          telephone: ''
+          user_name: '',
+          password: '',
+          phone: '',
+          e_mail: '',
+          user_type: '',
+          point:''
         }
         this.showAddUserForm = true
       },
@@ -154,10 +241,11 @@
           if (valid) {
             // 新添加
             if (this.addUserFormType === 1) {
-              axios.post(ToDJ('userRegister'), new URLSearchParams(this.addUserInfo)).then(res => {
+              axios.post(ToDJ('adminCreateuser'), new URLSearchParams(this.addUserInfo)).then(res => {
                 if (res.data.code === 0) {
                   this.NotifySuc("添加成功")
                   this.showAddUserForm = false
+
                   this.getUserList()
                 } else {
                   this.NotifyFail(res.data.data)
@@ -167,12 +255,37 @@
           }
         })
       },
-      // 修改信息
-      onEditUser(row) {
+      // 删除按钮
+      passengerBoundDrop(row) {
         // const { id_card, name, account, pwd, sex, telephone } = row
         this.addUserInfo = row
         this.addUserFormType = 2
-        this.showAddUserForm = true
+        this.showDropUserForm = true
+      },
+      // 提交修改
+      onEditAddUser() {
+        const combinedData = Object.assign({}, this.addUserInfo, this.userInfo);
+        this.$refs.addUserForm.validate((valid) => {
+          if (valid) {
+            // 新修改
+              axios.post(ToDJ('adminEdituser'), new URLSearchParams(combinedData)).then(res => {
+                if (res.data.code === 0) {
+                  this.NotifySuc("修改成功")
+                  this.showEditUserForm = false
+                  this.getUserList()
+                  this.addUserFormType=1
+                } 
+                else {
+                  this.NotifyFail(res.data.data)
+                }
+              })
+          }
+        })
+      },
+      // 修改信息
+      onEditUser(row) {
+        this.addUserInfo = row
+        this.showEditUserForm = true
       },
       // 性别格式化
       onFormatterSex(row, column, callValue, index) {
