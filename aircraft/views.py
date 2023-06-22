@@ -16,6 +16,10 @@ def admin_order(request):
 #管理员页面: 机票
 def admin_ticket(request):
   return render(request, 'admin_ticket.html')
+  
+#管理员页面: 乘机人
+def admin_passenger(request):
+  return render(request, 'admin_passenger.html')
 
 #管理员页面: 用户
 def admin_user(request):
