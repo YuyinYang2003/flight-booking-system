@@ -230,6 +230,22 @@ def Deletepassenger(request):
     # 若没注册
     return Action.fail("乘机人不存在，无法删除")
 
+@api_view(['GET',"POST"])
+# 管理员删除用户
+def Deleteuser(request):
+  # 获取参数
+  user_name=request.POST.get('user_name')
+  # 查询是否存在
+  checkUser = user_info.objects.filter(Q(user_name=user_name))
+  if checkUser.exists() == True :
+    # 如果存在则删除
+    checkUser.delete()
+    return Action.success()
+  else:
+    # 若没注册
+    return Action.fail("用户不存在，无法删除")
+
+
 
 # 用户编辑
 def buyVIP(request):
