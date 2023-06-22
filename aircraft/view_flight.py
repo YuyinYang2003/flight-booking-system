@@ -124,6 +124,11 @@ def flightDelay(request):
   else:
     checkFlight = checkFlight.first()
     ticketList = order_info.objects.filter(Q(flight_num1=flight_num)|Q(flight_num2=flight_num)) #中转订单任何一个取消都算取消
+    #取消航班的同时将这趟航班的的余票设置为0，防止再次查询出来
+    checkFlight.current_economy_set=0
+    checkFlight.current_bussiness_set=0
+    checkFlight.current_first_set=0
+    checkFlight.save()
     for item in ticketList:
       item.order_status = '该航班已取消'  #修改订单状态
       item.save()
