@@ -35,7 +35,7 @@ class flight_result(models.Model):
     current_first_set2 = models.SmallIntegerField() #航班二剩余头登舱座位
 
     class Meta:
-        db_table = 'flight_result'
+        db_table = 'filght_result'
 
 #单次查询
 class flight_city2(models.Model):
@@ -50,7 +50,7 @@ class flight_city2(models.Model):
     current_first_set = models.SmallIntegerField() # 头等舱剩余票数
     current_economy_set = models.SmallIntegerField() # 经济舱剩余票数
     current_bussiness_set = models.SmallIntegerField() # 公务舱剩余票数
-    ecnomy_class_price = models.DecimalField(max_digits=6, decimal_places=0) # 经济舱票价
+    economy_class_price = models.DecimalField(max_digits=6, decimal_places=0) # 经济舱票价
     first_class_price  = models.DecimalField(max_digits=6, decimal_places=0) # 头等舱票价
     business_class_price  = models.DecimalField(max_digits=6, decimal_places=0) # 公务舱票价
     baggage_choice={
