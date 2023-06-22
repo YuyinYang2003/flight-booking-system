@@ -65,15 +65,26 @@ def orderAdd(request):
   flight_num1 = request.POST.get('flight_num1')
   flight_num2 = request.POST.get('flight_num2') #两个航班显示在同一条订单记录里
   set_class = request.POST.get('set_class') #0economy,1first,2business
+  if set_class=='经济舱':
+     set_classn = 0
+  elif set_class=='头等舱':
+     set_classn = 1
+  else:
+     set_classn = 2
   flight_mode = request.POST.get('flight_mode') #0直飞，1转机
-  usePointOrNot = request.POST.get('usePointOrNot')
+  print(flight_mode)
+  flight_mode = int(flight_mode)
+  usePointOrNot = request.POST.get('usePointOrNot') #0是否 1是是
+  usePointOrNot = int(usePointOrNot)
   print('购票：', flight_num1, flight_num2, set_class, user_name, passenger_identity_id)
   # 查询航班
   checkUserPassenger=passenger_user.objects.filter(user_name=user_name,passenger_identity_id=passenger_identity_id)
   if checkUserPassenger.exists():
     if flight_mode==0:
       checkFlight = flight_city2.objects.filter(flight_num=flight_num1).first()
-      user=user_info.objects.filter(username=user_name).first()
+      print(type(checkFlight))
+
+      user=user_info.objects.filter(user_name=user_name).first()
       passenger=passenger_info.objects.filter(passenger_identity_id=passenger_identity_id).first()
       flight=flight_info.objects.filter(flight_num=flight_num1).first()
       studentornot=passenger.passenger_type
@@ -86,17 +97,19 @@ def orderAdd(request):
         else:
           user_type=2
       point=user.point
-      if set_class == '0':
-        total_seat=airplane_info.objects.filter(aiplane_id=flight_num1).first().economy_set
-        remain_seat = checkFlight.current_ecnomy_set
+      print(type(set_class))
+      if set_class == '经济舱':
+        total_seat=airplane_info.objects.filter(airplane_id=flight_num1).first().economy_set
+        remain_seat = checkFlight.current_economy_set
+        print(remain_seat)
         if remain_seat==0:
           return Action.fail("已售罄")
         cost = checkFlight.economy_class_price
         #更新余票
-        flight.current_ecnomy_set-=1
+        flight.current_economy_set-=1
         flight.save()
-      elif set_class == '1':
-        total_seat=airplane_info.objects.filter(aiplane_id=flight_num1).first().first_set
+      elif set_class == '头等舱':
+        total_seat=airplane_info.objects.filter(airplane_id=flight_num1).first().first_set
         remain_seat = checkFlight.current_first_set
         if remain_seat==0:
           return Action.fail("已售罄")
@@ -105,7 +118,7 @@ def orderAdd(request):
         flight.current_first_set-=1
         flight.save()
       else:
-        total_seat=airplane_info.objects.filter(aiplane_id=flight_num1).first().bussiness_set
+        total_seat=airplane_info.objects.filter(airplane_id=flight_num1).first().bussiness_set
         remain_seat = checkFlight.current_bussiness_set
         if remain_seat==0:
           return Action.fail("已售罄")
@@ -114,9 +127,9 @@ def orderAdd(request):
         flight.current_bussiness_set-=1
         flight.save()
       #生成座位号
-      if set_class==0:
+      if set_class=='经济舱':
         seat_num = 'JJ' + str(total_seat-remain_seat + 1)
-      elif set_class==1:
+      elif set_class=='头等舱':
         seat_num='TD'+str(total_seat-remain_seat + 1)
       else:
         seat_num='SW'+str(total_seat-remain_seat + 1)
@@ -129,7 +142,7 @@ def orderAdd(request):
       #生成订单
       classl=['经济舱','头等舱','公务舱']
       usepointl=['否','是']
-      newOrder=order_info(passenger_identity_id=passenger_identity_id,flight_num1=flight_num1,set_class1=classl[set_class],set_num1=seat_num,order_state='正常',point_use=usepointl[usePointOrNot],price=cost)
+      newOrder=order_info(passenger_identity_id=passenger_identity_id,flight_num1=flight_num1,set_class1=classl[set_classn],set_num1=seat_num,order_state='正常',point_use=usepointl[usePointOrNot],price=cost)
       newOrder.save()
       
       #更新积分
@@ -138,7 +151,7 @@ def orderAdd(request):
       return Action.success()
     else:
       checkFlight = flight_result.objects.filter(Q(flight_num1=flight_num1)&Q(flight_num2=flight_num2)).first()
-      user=user_info.objects.filter(username=user_name).first()
+      user=user_info.objects.filter(user_name=user_name).first()
       passenger=passenger_info.objects.filter(passenger_identity_id=passenger_identity_id).first()
       flight1=flight_info.objects.filter(flight_num=flight_num1).first()
       flight2=flight_info.objects.filter(flight_num=flight_num2).first()
@@ -152,25 +165,25 @@ def orderAdd(request):
         else:
           user_type=2
       point=user.point
-      if set_class == '0':
-        total_seat1=airplane_info.objects.filter(aiplane_id=flight_num1).first().economy_set
-        remain_seat1 = checkFlight.current_ecnomy_set1
-        total_seat2=airplane_info.objects.filter(aiplane_id=flight_num2).first().economy_set
-        remain_seat2 = checkFlight.current_ecnomy_set2
-        if remain_seat==0:
+      if set_class == '经济舱':
+        total_seat1=airplane_info.objects.filter(airplane_id=flight_num1).first().economy_set
+        remain_seat1 = checkFlight.current_economy_set1
+        total_seat2=airplane_info.objects.filter(airplane_id=flight_num2).first().economy_set
+        remain_seat2 = checkFlight.current_economy_set2
+        if remain_seat1*remain_seat2==0:
           return Action.fail("已售罄")
         cost = checkFlight.economy_class_price
         #更新余票
-        flight1.current_ecnomy_set-=1
+        flight1.current_economy_set-=1
         flight1.save()
-        flight2.current_ecnomy_set-=1
+        flight2.current_economy_set-=1
         flight2.save()
-      elif set_class == '1':
-        total_seat1=airplane_info.objects.filter(aiplane_id=flight_num1).first().first_set
+      elif set_class == '头等舱':
+        total_seat1=airplane_info.objects.filter(airplane_id=flight_num1).first().first_set
         remain_seat1 = checkFlight.current_first_set1
-        total_seat2=airplane_info.objects.filter(aiplane_id=flight_num2).first().first_set
+        total_seat2=airplane_info.objects.filter(airplane_id=flight_num2).first().first_set
         remain_seat2 = checkFlight.current_first_set2
-        if remain_seat==0:
+        if remain_seat1*remain_seat2==0:
           return Action.fail("已售罄")
         cost = checkFlight.first_class_price
         #更新余票
@@ -179,11 +192,11 @@ def orderAdd(request):
         flight2.current_first_set-=1
         flight2.save()
       else:
-        total_seat1=airplane_info.objects.filter(aiplane_id=flight_num1).first().bussiness_set
+        total_seat1=airplane_info.objects.filter(airplane_id=flight_num1).first().bussiness_set
         remain_seat1 = checkFlight.current_bussiness_set1
-        total_seat2=airplane_info.objects.filter(aiplane_id=flight_num1).first().bussiness_set
+        total_seat2=airplane_info.objects.filter(airplane_id=flight_num1).first().bussiness_set
         remain_seat2 = checkFlight.current_bussiness_set2
-        if remain_seat==0:
+        if remain_seat1*remain_seat2==0:
           return Action.fail("已售罄")
         cost = checkFlight.business_class_price
         #更新余票
@@ -192,10 +205,10 @@ def orderAdd(request):
         flight2.current_bussiness_set-=1
         flight2.save()
       #生成座位号
-      if set_class==0:
+      if set_class=='经济舱':
         seat_num1 = 'JJ' + str(total_seat1-remain_seat1 + 1)
         seat_num2 = 'JJ' + str(total_seat2-remain_seat2 + 1)
-      elif set_class==1:
+      elif set_class=='头等舱':
         seat_num1='TD'+str(total_seat1-remain_seat1 + 1)
         seat_num2='TD'+str(total_seat2-remain_seat2 + 1)
       else:
@@ -210,7 +223,7 @@ def orderAdd(request):
       #生成订单
       classl=['经济舱','头等舱','公务舱']
       usepointl=['否','是']
-      newOrder=order_info(passenger_identity_id=passenger_identity_id,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=classl[set_class],set_class2=classl[set_class],set_num1=seat_num1,set_num2=seat_num2,order_state='正常',point_use=usepointl[usePointOrNot],price=cost)
+      newOrder=order_info(passenger_identity_id=passenger_identity_id,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=classl[set_classn],set_class2=classl[set_classn],set_num1=seat_num1,set_num2=seat_num2,order_state='正常',point_use=usepointl[usePointOrNot],price=cost)
       newOrder.save()
       
       #更新积分
@@ -255,7 +268,7 @@ def favouriteAdd(request):
   set_class = request.POST.get('set_class')  #获取舱位
   #如果是直飞：
   if flight_mode == 0:
-    flight_num = request.POST.get('flight_num')  #获取想要收藏的航班号
+    flight_num = request.POST.get('flight_num1')  #获取想要收藏的航班号
     print('收藏：', flight_num,  user_name)
     checkFlight = flight_info.objects.filter(flight_num=flight_num).first()
     checkFavorite = favorites.objects.filter(user_name = user_name,flight_num=flight_num,set_class1=set_class).first()  #检验有没有收藏过
@@ -267,9 +280,9 @@ def favouriteAdd(request):
       #按照舱位的不同收藏不同的价格
       if set_class == '经济舱':
         if UserlastFavorite.exists():   #存在收藏记录则收藏编号+1
-          newfavorite = favorites(favorites_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,total_price=checkFlight.ecnomy_class_price)
+          newfavorite = favorites(favorites_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,total_price=checkFlight.economy_class_price)
         else:   #不存在则设置为0
-          newfavorite = favorites(favorites_id = 1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,total_price=checkFlight.ecnomy_class_price)
+          newfavorite = favorites(favorites_id = 1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,total_price=checkFlight.economy_class_price)
       else :
         if set_class == '头等舱':
           if UserlastFavorite.exists():

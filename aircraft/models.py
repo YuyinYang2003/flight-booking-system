@@ -86,9 +86,9 @@ class flight_info(models.Model):
     current_first_set = models.SmallIntegerField() # 头等舱剩余票数
     current_economy_set = models.SmallIntegerField() # 经济舱剩余票数
     current_bussiness_set = models.SmallIntegerField() # 公务舱剩余票数
-    ecnomy_class_price = models.DecimalField(max_digits=6, decimal_places=0) # 经济舱票价
+    economy_class_price = models.DecimalField(max_digits=6, decimal_places=0) # 经济舱票价
     first_class_price  = models.DecimalField(max_digits=6, decimal_places=0) # 头等舱票价
-    bussiness_class_price  = models.DecimalField(max_digits=6, decimal_places=0) # 公务舱票价
+    business_class_price  = models.DecimalField(max_digits=6, decimal_places=0) # 公务舱票价
     baggage_choice={
         ('0'),
         ('1')

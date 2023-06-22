@@ -99,8 +99,8 @@
         width="150"
         align="center">
         <template slot-scope="{ row }">
-          <el-button type="text" @click="onChossFlight(row)">购票</el-button>
-          <el-button type="text" @click="onChossFlight(row)">收藏</el-button>
+          <el-button type="text" @click="onChooseFlight(row)">购票</el-button>
+          <el-button type="text" @click="onFavouriteFlight(row)">收藏</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -109,10 +109,20 @@
   <!-- 选票 -->
   <el-dialog :visible.sync="showABuyInfoForm">
     <el-form ref="addOrderForm" :model="buyInfo" label-width="110px" label-position="left">
-      <el-form-item label="座位类型" prop="ticket_type">
-        <el-radio v-model="buyInfo.ticket_type" label="1">头等舱 {{buyInfo.price_first_class}}</el-radio>
-        <el-radio v-model="buyInfo.ticket_type" label="2">经济舱 {{buyInfo.price_economy_class}}</el-radio>
+      <el-form-item label="座位类型" prop="set_class">
+        <el-radio v-model="buyInfo.set_class" label="头等舱">头等舱 余票：{{flightinfo.current_first_set1}}</el-radio>
+        <el-radio v-model="buyInfo.set_class" label="公务舱">公务舱 余票：{{flightinfo.current_bussiness_set1}}</el-radio>
+        <el-radio v-model="buyInfo.set_class" label="经济舱">经济舱 余票：{{flightinfo.current_economy_set1}}</el-radio>
       </el-form-item>
+      <el-form-item label="使用积分" prop="usePointOrNot">
+        <el-radio v-model="buyInfo.usePointOrNot" label="1">是</el-radio>
+        <el-radio v-model="buyInfo.usePointOrNot" label="0">否</el-radio>
+      </el-form-item>
+      <el-form-item label="选择乘机人" prop="passenger_identity_id">
+        <el-select v-model="buyInfo.passenger_identity_id" placeholder="请选择乘机人">
+          <el-option v-for="passenger in addPassengerInfo" :key="passenger.passenger_identity_id" :label="passenger.passenger_name" :value="passenger.passenger_identity_id"></el-option>
+        </el-select>
+      </el-form-item>  
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="primary" @click="onSubmitBuy">确认购买</el-button>
@@ -126,6 +136,7 @@
     data() {
       return {
         list: [],
+        passengerf: [],
         // 添加
         addFlightFormType: 1,
         showAddFlightForm: false,
@@ -148,30 +159,78 @@
           baggage: '',
           flight_mode: '均允许'
         },
+        flightinfo: {
+          flight_num1: '',
+          flight_num2: '',
+          airplane_num1: '',
+          airplane_num2: '',
+          depart_time1: '',
+          arrive_time1: '',
+          depart_time2: '',
+          arrive_time2: '',
+          depart_airport_name: '',
+          transfer_airport_name: '',
+          transfer_city: '',
+          arrive_airport_name: '',
+          transfer_time: '',
+          fly_time1: '',
+          fly_time2: '',
+          current_bussiness_set1: '',
+          current_economy_set1: '',
+          current_first_set1: '',
+          current_bussiness_set2: '',
+          current_economy_set2: '',
+          economy_class_price: '',
+          current_first_set2: '',
+          price: '',
+        },
         flightRules: {
           name: [{ required: true, message: '请输入名称', trigger: 'blur' }]
+        },
+        addPassengerInfo: {
+          passenger_identity_id: '',
+          passenger_name: '',
+          passenger_phone: '',
+          passenger_type: '',
+          sex: '',
+          passport: ''
         },
         // 购票
         showABuyInfoForm: false,
         buyInfo: {
-          user_id: '',
-          flight_num: '',
-          ticket_type: '1',
-          price_first_class: '',
-          price_economy_class: ''
+          user_name: '',
+          passenger_identity_id: '',
+          flight_mode: '',
+          set_class: '',
+          usePointOrNot: '',
+          flight_num1: '',
+          flight_num2: ''
         }
       }
     },
     mounted() {
-      this.getFlightList()
       let userInfo = window.localStorage.getItem("aircraft_userInfo")
       if (userInfo) {
         userInfo = JSON.parse(userInfo)
         this.userInfo = userInfo
-        this.buyInfo.user_id = userInfo.id_card
+        this.buyInfo.user_name = userInfo.user_name
       }
+      this.getFlightList()
+      this.getPassengerList()
+      
     },
     methods: {
+      getPassengerList() {
+        // 获取列表
+        axios.post(ToDJ('passengerList'), new URLSearchParams(this.userInfo)).then(res => {
+          if (res.data.code === 0) {
+            const addPassengerInfo = res.data.data
+            this.addPassengerInfo = addPassengerInfo
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
       getFlightList() {
         // 获取列表
         if (!this.queryInfo.depart_time) {
@@ -212,15 +271,34 @@
         this.getFlightList()
       },
       // 选票
-      onChossFlight(row) {
-        const { flight_num, price_first_class, price_economy_class } = row
-        this.buyInfo.flight_num = flight_num
-        this.buyInfo.price_first_class = price_first_class
-        this.buyInfo.price_economy_class = price_economy_class
+      onChooseFlight(row) {
+        
+        this.flightinfo = row
+        this.buyInfo.flight_num1 = this.flightinfo.flight_num1
+        this.buyInfo.flight_num2 = this.flightinfo.flight_num2
+        if (this.flightinfo.flight_num2 !== undefined && this.flightinfo.flight_num2 !== null && this.flightinfo.flight_num2 !== ''){
+          this.buyInfo.flight_mode = 1
+        }
+        else{
+          this.buyInfo.flight_mode = 0
+        }
         this.showABuyInfoForm = true
       },
       // 下单
       onSubmitBuy() {
+        axios.post(ToDJ('orderAdd'), new URLSearchParams(this.buyInfo)).then(res => {
+          if (res.data.code === 0) {
+            this.NotifySuc("购买成功")
+            this.showABuyInfoForm = false
+            this.getFlightList()
+          } else {
+            this.NotifyFail(res.data.data)
+          }
+        })
+      },
+      // 收藏
+      onFavouriteFlight(row) {
+        this.
         axios.post(ToDJ('orderAdd'), new URLSearchParams(this.buyInfo)).then(res => {
           if (res.data.code === 0) {
             this.NotifySuc("购买成功")

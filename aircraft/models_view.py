@@ -33,7 +33,9 @@ class flight_result(models.Model):
     current_bussiness_set2 = models.SmallIntegerField() #航班二剩余公务舱座位
     current_economy_set2 =  models.SmallIntegerField() #航班二剩余经济舱座位
     current_first_set2 = models.SmallIntegerField() #航班二剩余头登舱座位
-
+    depart_time_zone = models.SmallIntegerField() #出发地时区
+    tranfer_time_zone = models.SmallIntegerField() #中转地时区
+    arrive_time_zone = models.SmallIntegerField() #到达地时区
     class Meta:
         db_table = 'filght_result'
 

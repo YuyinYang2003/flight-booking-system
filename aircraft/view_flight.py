@@ -43,6 +43,8 @@ def flightList(request):
       list = list.filter(Q(baggage_info1=1)&Q(baggage_info2=1))
     for item in list:
       flight = {}
+      flight['flight_num1'] = item.flight_num1
+      flight['flight_num2'] = item.flight_num2
       flight['airplane_num1'] = item.airplane_num1
       flight['airplane_num2'] = item.airplane_num2
       flight['depart_time1'] = item.depart_time1
@@ -85,6 +87,8 @@ def flightList(request):
       list = list.filter(baggage_info=1)
     for item in list:
       flight = {}
+      flight['flight_num1'] = item.flight_num
+      flight['flight_num2'] = None
       flight['airplane_num1'] = item.airplane_num
       flight['airplane_num2'] = None
       flight['depart_time1'] = item.depart_time
@@ -97,9 +101,9 @@ def flightList(request):
       flight['transfer_time'] = None
       flight['fly_time1'] = item.arrive_time-item.depart_time + timedelta(hours=(item.arrive_time_zones-item.depart_time_zones))
       flight['fly_time2'] = None
-      flight['current_bussiness_set1'] = item.current_bussiness_set1
-      flight['current_economy_set1'] = item.current_economy_set1
-      flight['current_first_set1'] = item.current_first_set1
+      flight['current_bussiness_set1'] = item.current_bussiness_set
+      flight['current_economy_set1'] = item.current_economy_set
+      flight['current_first_set1'] = item.current_first_set
       flight['current_bussiness_set2'] = None
       flight['current_economy_set2'] = None
       flight['current_first_set2'] = None
