@@ -3,6 +3,7 @@ from datetime import datetime
 import django_mysql.models
 #中转查询
 class flight_result(models.Model):
+    id= models.CharField(primary_key=True, max_length=20) # 唯一中转飞行的编号
     flight_num1 = models.CharField(max_length=10) # 航班号1
     airplane_num1 = models.CharField(max_length=10) # 飞机号1
     arrive_time1 = models.DateTimeField() # 到达时间1
@@ -34,7 +35,6 @@ class flight_result(models.Model):
     current_first_set2 = models.SmallIntegerField() #航班二剩余头登舱座位
 
     class Meta:
-        managed=False
         db_table = 'flight_result'
 
 #单次查询
@@ -61,5 +61,4 @@ class flight_city2(models.Model):
     depart_time_zones = models.SmallIntegerField()#出发地时区
     arrive_time_zones = models.SmallIntegerField()#到达地时区
     class Meta:
-        managed=False
         db_table = 'flight_city2'
