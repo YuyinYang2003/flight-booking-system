@@ -23,6 +23,7 @@ def userRegister(request):
   newUser.save()
   return Action.success()
 
+
 @api_view(['GET',"POST"])
 # 乘机人注册
 def passengerRegister(request):
@@ -81,7 +82,6 @@ def userEdit(request):
   if checkUser.exists() == True :
     # 如果存在则开始更改
     newuser = checkUser.first()
-    newuser.user_name=user_name
     newuser.password=password
     newuser.phone=phone
     newuser.email=email
@@ -114,15 +114,36 @@ def adminEdit(request):
     return Action.fail("管理员不存在")
 
 @api_view(['GET',"POST"])
+# 管理员编辑用户
+def adminEdituser(request):
+  # 获取要编辑的用户名,获取要改变的信息
+  user_name = request.POST.get('user_name')
+  user_type = request.POST.get('user_type')
+  point = request.POST.get('point')
+  # 查询是否存在
+  checkUser = user_info.objects.filter(Q(user_name=user_name))
+  if checkUser.exists() == True :
+    # 如果存在则开始更改
+    newuser = checkUser.first()
+    newuser.user_type=user_type
+    newuser.point=point
+    newuser.save()
+    return Action.success(UserSerializer(newuser, many = False).data)
+  else:
+    # 若没注册
+    return Action.fail("用户不存在")
+
+
+@api_view(['GET',"POST"])
 # 乘机人编辑
 def passengerEdit(request):
   # 获取参数
-  passenger_identity_id=request.POST.get('passenger_identity_id')
+  passenger_identy_id=request.POST.get('passenger_identity_id')
   passenger_phone = request.POST.get('passenger_phone')
   passport = request.POST.get('passport')
   passenger_type = request.POST.get('passenger_type')
   # 查询是否存在
-  checkPassenger = passenger_info.objects.filter(Q(passenger_identity_id=passenger_identity_id))
+  checkPassenger = passenger_info.objects.filter(Q(passenger_identy_id=passenger_identy_id))
   if checkPassenger.exists() == True :
     # 如果存在则开始更改
     newpassenger = checkPassenger.first()
@@ -224,4 +245,20 @@ def passengerBoundDrop(request):
   else:
     # 若已被绑定，则删除
     checkIdentityUser.delete()
+    return Action.success()
+  
+
+@api_view(['GET',"POST"])
+# 收藏的删除
+def FavoriteDrop(request):
+  favorite_id = request.POST.get('favorite_id')
+  user_name=request.POST.get('user_name')
+  # 查询该收藏是否被当前用户添加到收藏信息中
+  checkfavorite_id = favorites.objects.filter(Q(favorite_id=favorite_id)|Q(user_name=user_name))
+  if checkfavorite_id.exists() == False :
+    # 如果该收藏没有被用户添加，则返回错误信息
+    return Action.fail("当前收藏不存在")
+  else:
+    # 若收藏已经被添加，则删除
+    checkfavorite_id.delete()
     return Action.success()
