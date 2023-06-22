@@ -215,6 +215,22 @@ def passengerList(request):
     arr.append(temp_data)
   return Action.success(arr)
 
+@api_view(['GET',"POST"])
+# 管理员删除乘机人
+def Deletepassenger(request):
+  # 获取参数
+  passenger_identy_id=request.POST.get('passenger_identity_id')
+  # 查询是否存在
+  checkPassenger = passenger_info.objects.filter(Q(passenger_identy_id=passenger_identy_id))
+  if checkPassenger.exists() == True :
+    # 如果存在则删除
+    checkPassenger.delete()
+    return Action.success()
+  else:
+    # 若没注册
+    return Action.fail("乘机人不存在，无法删除")
+
+
 # 用户编辑
 def buyVIP(request):
   # 获取参数
