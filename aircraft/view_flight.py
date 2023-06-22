@@ -18,15 +18,19 @@ def flightList(request):
   arrive = request.POST.get('arrive')
   depart_time = request.POST.get('depart_time')
   baggage = request.POST.get('luggage') #只能筛选全都含免费行李/无筛选需求，要求全都含免费行李为1，无筛选需求为0
-  flight_mode = request.POST.get('flight_mode') #要么中转要么直飞，0直飞1中转，默认0
+  flight_mode = request.POST.get('flight_mode') #要么中转要么直飞，0直飞1中转2均可以，默认2
   arr = []
-  if flight_mode == 1:
+  if price_low:
+    price_low=int(price_low)
+  if price_high:
+    price_high=int(price_high)
+  if flight_mode=='只中转' or flight_mode=='均允许':
     list = flight_result.objects.all()
     #筛选中价格筛选是只要三种价格一种在区间内，这个飞行方案就会出现
     if price_low:
-      list = list.filter(Q(economy_class_price__gt=price_low)|Q(first_class_price__gt=price_low)|Q(business_class_price__gt=price_low))
+      list = list.filter((Q(economy_class_price__gt=price_low)&~Q(current_economy_set1=0)&~Q(current_economy_set2=0))|(Q(first_class_price__gt=price_low)&~Q(current_first_set1=0)&~Q(current_first_set2=0))|(Q(business_class_price__gt=price_low)&~Q(current_bussiness_set1=0)&~Q(current_economy_set2=0)))
     if price_high:
-      list = list.filter(Q(economy_class_price__lt=price_high)|Q(first_class_price__lt=price_high)|Q(business_class_price__lt=price_high))
+      list = list.filter((Q(economy_class_price__lt=price_high)&~Q(current_economy_set1=0)&~Q(current_economy_set2=0))|(Q(first_class_price__lt=price_high)&~Q(current_first_set1=0)&~Q(current_first_set2=0))|(Q(business_class_price__lt=price_high)&~Q(current_bussiness_set1=0)&~Q(current_economy_set2=0)))
     if depart:
       list = list.filter(depart_city=depart)
     if arrive:
@@ -45,46 +49,50 @@ def flightList(request):
       flight['arrive_time2'] = item.arrive_time2
       flight['depart_airport_name'] = item.depart_airport_name
       flight['transfer_airport_name'] = item.transfer_airport_name
+      flight['transfer_city'] = item.transfer_city
       flight['arrive_airport_name'] = item.arrive_airport_name
-      if item.current_economy_set1>=1:
+      flight['transfer_time'] = item.depart_time2 - item.arrive_time1
+      if item.current_economy_set1>=1 and item.current_economy_set2>=1 and (not price_low or item.economy_class_price>=price_low) and (not price_high or item.economy_class_price<=price_high):
         flight['price'] = item.economy_class_price
-      if item.current_first_set2>=1:
+      elif item.current_first_set1>=1 and item.current_first_set2>=1 and (not price_low or item.first_class_price>=price_low) and (not price_high or item.first_class_price<=price_high):
         flight['price'] = item.first_class_price
-      if item.current_bussiness_set2>=1:
+      else: 
         flight['price'] = item.business_class_price
       arr.append(flight)
-
-  list = flight_city2.objects.all()
-  if price_low:
-    list = list.filter(Q(economy_class_price__gt=price_low)|Q(first_class_price__gt=price_low)|Q(business_class_price__gt=price_low))
-  if price_high:
-    list = list.filter(Q(economy_class_price__lt=price_high)|Q(first_class_price__lt=price_high)|Q(business_class_price__lt=price_high))
-  if depart:
-    list = list.filter(depart_city=depart)
-  if arrive:
-    list = list.filter(arrive_city=arrive)
-  if depart_time:
-    list = list.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
-  if baggage:
-    list = list.filter(baggage_info=1)
-  for item in list:
-    flight = {}
-    flight['airplane_num1'] = item.airplane_num
-    flight['airplane_num2'] = None
-    flight['depart_time1'] = item.depart_time
-    flight['arrive_time1'] = item.arrive_time
-    flight['depart_time2'] = None
-    flight['arrive_time2'] = None
-    flight['depart_airport_name'] = item.depart_airport_name
-    flight['transfer_city'] = None
-    flight['arrive_airport_name'] = item.arrive_airport_name
-    if item.current_economy_set>=1:
-      flight['price'] = item.ecnomy_class_price
-    if item.current_first_set>=1:
-      flight['price'] = item.first_class_price
-    if item.current_bussiness_set>=1:
-      flight['price'] = item.business_class_price
-    arr.append(flight)
+  if flight_mode=='只直达' or flight_mode=='均允许':
+    list = flight_city2.objects.all()
+    if price_low:
+      print(price_low)
+      list = list.filter((Q(economy_class_price__gt=price_low)&~Q(current_economy_set=0))|(Q(first_class_price__gt=price_low)&~Q(current_first_set=0))|(Q(business_class_price__gt=price_low)&~Q(current_bussiness_set=0)))
+    if price_high:
+      list = list.filter((Q(economy_class_price__lt=price_high)&~Q(current_economy_set=0))|(Q(first_class_price__lt=price_high)&~Q(current_first_set=0))|(Q(business_class_price__lt=price_high)&~Q(current_bussiness_set=0)))
+    if depart:
+      list = list.filter(depart_city=depart)
+    if arrive:
+      list = list.filter(arrive_city=arrive)
+    if depart_time:
+      list = list.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
+    if baggage:
+      list = list.filter(baggage_info=1)
+    for item in list:
+      flight = {}
+      flight['airplane_num1'] = item.airplane_num
+      flight['airplane_num2'] = None
+      flight['depart_time1'] = item.depart_time
+      flight['arrive_time1'] = None
+      flight['depart_time2'] = None
+      flight['arrive_time2'] = item.arrive_time
+      flight['depart_airport_name'] = item.depart_airport_name
+      flight['transfer_city'] = None
+      flight['arrive_airport_name'] = item.arrive_airport_name
+      flight['transfer_time'] = None
+      if item.current_economy_set>=1 and (not price_low or item.economy_class_price>=price_low) and (not price_high or item.economy_class_price<=price_high):
+        flight['price'] = item.economy_class_price
+      elif item.current_first_set>=1 and (not price_low or item.first_class_price>=price_low) and (not price_high or item.first_class_price<=price_high):
+        flight['price'] = item.first_class_price
+      else: 
+        flight['price'] = item.business_class_price
+      arr.append(flight)
   return Action.success(arr)   
 
 @api_view(['GET',"POST"])

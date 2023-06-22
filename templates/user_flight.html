@@ -32,9 +32,9 @@
       </div>
       <div class="query-teim" style="width: 150px">
         <el-select size="mini" v-model="queryInfo.flight_mode" placeholder="请选择直达/中转">
-          <el-option label="只直达" :value="2"></el-option>
-          <el-option label="只中转" :value="1"></el-option>
-          <el-option label="均允许" :value="0"></el-option>
+          <el-option label="只直达" :value="'只直达'"></el-option>
+          <el-option label="只中转" :value="'只中转'"></el-option>
+          <el-option label="均允许" :value="'均允许'"></el-option>
         </el-select>
       </div>
       <div class="query-teim" style="width: 150px">
@@ -53,16 +53,17 @@
     <el-table
       :data="list"
       style="width: 100%">
-      <el-table-column
-        prop="airplane_num1"
-        label="航班号"
-        width="100"
-        align="center">
+      <el-table-column label="航班号" align="center">
+        <template slot-scope="{ row }">
+          <div v-if="row.airplane_num2">{{ row.airplane_num1 }}</div>
+          <div v-else>{{ row.airplane_num1 }}</div>
+          <div v-if="row.airplane_num2">{{ row.airplane_num2 }}</div>
+        </template>
       </el-table-column>
       <el-table-column
         prop="depart_time1"
         label="出发时间"
-        width="150"
+        width="200"
         align="center">
       </el-table-column>
       <el-table-column
@@ -76,10 +77,11 @@
         label="出发机场"
         align="center">
       </el-table-column>
-      <el-table-column
-        prop="transfer_airport_name"
-        label="中转机场/时间"
-        align="center">
+      <el-table-column label="中转机场/时间" align="center">
+        <template slot-scope="{ row }">
+          <div>{{ row.transfer_airport_name }}</div>
+          <div>{{ row.transfer_time }}</div>
+        </template>
       </el-table-column>
       <el-table-column
         prop="arrive_airport_name"
@@ -87,9 +89,9 @@
         align="center">
       </el-table-column>
       <el-table-column
-        prop="economy_class_price"
+        prop="price"
         label="最低票价"
-        width="100"
+        width="80"
         align="center">
       </el-table-column>
       <el-table-column
@@ -144,7 +146,7 @@
           price_low: '',
           price_high: '',
           baggage: '',
-          flight_mode: ''
+          flight_mode: '均允许'
         },
         flightRules: {
           name: [{ required: true, message: '请输入名称', trigger: 'blur' }]
@@ -178,10 +180,11 @@
         axios.post(ToDJ('flightList'), new URLSearchParams(this.queryInfo)).then(res => {
           if (res.data.code === 0) {
             const list = res.data.data
-            //for (const item of list) {
-            //  item.depart_time = this.formateTime(item.depart_time)
-            //  item.arrive_time = this.formateTime(item.arrive_time)
-            //}
+            for (const item of list) {
+              item.depart_time1 = this.formateTime(item.depart_time1)
+              item.arrive_time2 = this.formateTime(item.arrive_time2)
+              item.transfer_time = this.formatDuration(item.transfer_time)
+            }
             this.list = list 
           } else {
             this.NotifyFail(res.data.data)
@@ -254,7 +257,19 @@
         m = m >= 10 ? m : `0${m}`
         s = s >= 10 ? s : `0${s}`
         return `${year}-${month}-${day} ${h}:${m}`
-      }
+      },
+      formatDuration(duration) {
+        if (!duration) {
+          return '';
+         }
+  
+        var days = parseInt(duration.substring(duration.indexOf('P') + 1, duration.indexOf('D'))) || 0;
+        var hours = parseInt(duration.substring(duration.indexOf('T') + 1, duration.indexOf('H'))) || 0;
+        var minutes = parseInt(duration.substring(duration.indexOf('H') + 1, duration.indexOf('M'))) || 0;
+        var seconds = parseInt(duration.substring(duration.indexOf('M') + 1, duration.indexOf('S'))) || 0;
+  
+        return hours + '小时 ' + minutes + '分钟 ';
+        }
     }
   })
 </script>
