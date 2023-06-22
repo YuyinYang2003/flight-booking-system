@@ -1,5 +1,4 @@
 from rest_framework.decorators import api_view
-from itertools import chain
 from datetime import datetime,timedelta
 from .Action import Action
 from .models import *
@@ -19,7 +18,8 @@ def flightList(request):
   arrive = request.POST.get('arrive')
   depart_time = request.POST.get('depart_time')
   baggage = request.POST.get('luggage') #只能筛选全都含免费行李/无筛选需求，要求全都含免费行李为1，无筛选需求为0
-  flight_mode = request.POST.get('flight_mode') #2是直飞，1是中转，不选就是null
+  flight_mode = request.POST.get('flight_mode') #要么中转要么直飞，0直飞1中转，默认0
+  arr = []
   if flight_mode == 1:
     list = flight_result.objects.all()
     #筛选中价格筛选是只要三种价格一种在区间内，这个飞行方案就会出现
@@ -35,49 +35,58 @@ def flightList(request):
       list = list.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
     if baggage:
       list = list.filter(Q(baggage_info1=1)&Q(baggage_info2=1))
-    return Action.success(MultiFlightSerializer(list, many = True).data) #多加一个转机的serializer
-  elif flight_mode==2:
-    list = flight_city2.objects.all()
-    if price_low:
-      list = list.filter(Q(economy_class_price__gt=price_low)|Q(first_class_price__gt=price_low)|Q(business_class_price__gt=price_low))
-    if price_high:
-      list = list.filter(Q(economy_class_price__lt=price_high)|Q(first_class_price__lt=price_high)|Q(business_class_price__lt=price_high))
-    if depart:
-      list = list.filter(depart_city=depart)
-    if arrive:
-      list = list.filter(arrive_city=arrive)
-    if depart_time:
-      list = list.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
-    if baggage:
-      list = list.filter(baggage_info=1)
-    return Action.success(FlightSerializer(list, many = True).data)
-  else:
-    list2=flight_city2.objects.all()
-    list1=flight_result.objects.all()
-    if price_low:
-      list1 = list1.filter(Q(economy_class_price__gt=price_low)|Q(first_class_price__gt=price_low)|Q(business_class_price__gt=price_low))
-      list2 = list2.filter(Q(economy_class_price__gt=price_low)|Q(first_class_price__gt=price_low)|Q(business_class_price__gt=price_low))
-    if price_high:
-      list1 = list1.filter(Q(economy_class_price__lt=price_high)|Q(first_class_price__lt=price_high)|Q(business_class_price__lt=price_high))
-      list2 = list2.filter(Q(economy_class_price__lt=price_high)|Q(first_class_price__lt=price_high)|Q(business_class_price__lt=price_high))
-    if depart:
-      list1 = list1.filter(depart_city=depart)
-      list2 = list2.filter(depart_city=depart)
-    if arrive:
-      list1 = list1.filter(arrive_city=arrive)
-      list2 = list2.filter(arrive_city=arrive)
-    if depart_time:
-      list1 = list1.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
-      list2 = list2.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
-    if baggage:
-      list1 = list1.filter(baggage_info=1)
-      list2 = list2.filter(baggage_info=1)
-    s1=MultiFlightSerializer(list1, many = True)
-    s2=MultiFlightSerializer(list2, many = True)
-    datamerge=chain(s1.data,s2.data)
-    datalist=[dataobj for dataobj in datamerge]
-    return Action.success(datalist)
-    
+    for item in list:
+      flight = {}
+      flight['airplane_num1'] = item.airplane_num1
+      flight['airplane_num2'] = item.airplane_num2
+      flight['depart_time1'] = item.depart_time1
+      flight['arrive_time1'] = item.arrive_time1
+      flight['depart_time2'] = item.depart_time2
+      flight['arrive_time2'] = item.arrive_time2
+      flight['depart_airport_name'] = item.depart_airport_name
+      flight['transfer_airport_name'] = item.transfer_airport_name
+      flight['arrive_airport_name'] = item.arrive_airport_name
+      if item.current_economy_set1>=1:
+        flight['price'] = item.economy_class_price
+      if item.current_first_set2>=1:
+        flight['price'] = item.first_class_price
+      if item.current_bussiness_set2>=1:
+        flight['price'] = item.business_class_price
+      arr.append(flight)
+
+  list = flight_city2.objects.all()
+  if price_low:
+    list = list.filter(Q(economy_class_price__gt=price_low)|Q(first_class_price__gt=price_low)|Q(business_class_price__gt=price_low))
+  if price_high:
+    list = list.filter(Q(economy_class_price__lt=price_high)|Q(first_class_price__lt=price_high)|Q(business_class_price__lt=price_high))
+  if depart:
+    list = list.filter(depart_city=depart)
+  if arrive:
+    list = list.filter(arrive_city=arrive)
+  if depart_time:
+    list = list.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=-1),datetime.strptime(depart_time, '%Y-%m-%d')))
+  if baggage:
+    list = list.filter(baggage_info=1)
+  for item in list:
+    flight = {}
+    flight['airplane_num1'] = item.airplane_num
+    flight['airplane_num2'] = None
+    flight['depart_time1'] = item.depart_time
+    flight['arrive_time1'] = item.arrive_time
+    flight['depart_time2'] = None
+    flight['arrive_time2'] = None
+    flight['depart_airport_name'] = item.depart_airport_name
+    flight['transfer_city'] = None
+    flight['arrive_airport_name'] = item.arrive_airport_name
+    if item.current_economy_set>=1:
+      flight['price'] = item.ecnomy_class_price
+    if item.current_first_set>=1:
+      flight['price'] = item.first_class_price
+    if item.current_bussiness_set>=1:
+      flight['price'] = item.business_class_price
+    arr.append(flight)
+  return Action.success(arr)   
+
 @api_view(['GET',"POST"])
 # 管理员添加新航班
 def flightAdd(request):
@@ -133,3 +142,5 @@ def flightDelay(request):
       item.order_status = '该航班已取消'  #修改订单状态
       item.save()
     return Action.success()
+  
+
