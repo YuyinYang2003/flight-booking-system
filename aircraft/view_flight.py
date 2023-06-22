@@ -56,6 +56,12 @@ def flightList(request):
       flight['transfer_time'] = item.depart_time2 - item.arrive_time1
       flight['fly_time1'] = item.arrive_time1-item.depart_time1 + timedelta(hours=(item.tranfer_time_zone-item.depart_time_zone))
       flight['fly_time2'] = item.arrive_time2 - item.depart_time2 + timedelta(hours=(item.arrive_time_zone-item.tranfer_time_zone))
+      flight['current_bussiness_set1'] = item.current_bussiness_set1
+      flight['current_economy_set1'] = item.current_economy_set1
+      flight['current_first_set1'] = item.current_first_set1
+      flight['current_bussiness_set2'] = item.current_bussiness_set2
+      flight['current_economy_set2'] = item.current_economy_set2
+      flight['current_first_set2'] = item.current_first_set2
       if item.current_economy_set1>=1 and item.current_economy_set2>=1 and (not price_low or item.economy_class_price>=price_low) and (not price_high or item.economy_class_price<=price_high):
         flight['price'] = item.economy_class_price
       elif item.current_first_set1>=1 and item.current_first_set2>=1 and (not price_low or item.first_class_price>=price_low) and (not price_high or item.first_class_price<=price_high):
@@ -91,6 +97,12 @@ def flightList(request):
       flight['transfer_time'] = None
       flight['fly_time1'] = item.arrive_time-item.depart_time + timedelta(hours=(item.arrive_time_zones-item.depart_time_zones))
       flight['fly_time2'] = None
+      flight['current_bussiness_set1'] = item.current_bussiness_set1
+      flight['current_economy_set1'] = item.current_economy_set1
+      flight['current_first_set1'] = item.current_first_set1
+      flight['current_bussiness_set2'] = None
+      flight['current_economy_set2'] = None
+      flight['current_first_set2'] = None
       if item.current_economy_set>=1 and (not price_low or item.economy_class_price>=price_low) and (not price_high or item.economy_class_price<=price_high):
         flight['price'] = item.economy_class_price
       elif item.current_first_set>=1 and (not price_low or item.first_class_price>=price_low) and (not price_high or item.first_class_price<=price_high):
