@@ -92,9 +92,6 @@ def flightList(request):
 def flightAdd(request):
   # 获取参数
   flight_num = request.POST.get('flight_num')
-  #corp = request.POST.get('corp')
-  #depart = request.POST.get('depart')
-  #arrive = request.POST.get('arrive')
   depart_time = request.POST.get('depart_time')
   airplane_num = request.POST.get('airplane_num')
   arrive_time = request.POST.get('arrive_time')
@@ -112,6 +109,14 @@ def flightAdd(request):
   if has.exists() == True :
     return Action.fail("已存在")
   # 若没,添加入数据库
+  airplane = airplane_info.objects.filter(airplane_id=airplane_num).first()
+  #如果没有输入座位数量，就自动输入飞机原始的座位数
+  if not ticket_total_first_class:
+    ticket_total_first_class = airplane.first_set
+  if not ticket_total_business_class:
+    ticket_total_business_class = airplane.bussiness_set
+  if not ticket_total_economy_class:
+    ticket_total_economy_class = airplane.economy_set  
   new = flight_info(flight_num=flight_num, depart_airport=depart_airport, airplane_num=airplane_num, arrive_airport=arrive_airport, depart_time=depart_time, arrive_time=arrive_time, economy_class_price=economy_class_price, first_class_price=first_class_price, business_class_price=business_class_price, current_economy_set=ticket_total_economy_class, current_first_set=ticket_total_first_class, current_business_set=ticket_total_business_class, baggage_info=baggage_info)
   new.save()
   # 添加成功
