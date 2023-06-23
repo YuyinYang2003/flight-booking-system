@@ -30,13 +30,19 @@ urlpatterns = [
     path('admin_order/', views.admin_order),
     path('admin_ticket/', views.admin_ticket),
     path('admin_user/', views.admin_user),
+    path('admin_passenger/', views.admin_passenger),
+    
 
     path('user/', views.user_flight),
     path('user_flight/', views.user_flight),
     path('user_order/', views.user_order),
     path('user_user/', views.user_user),
     path('user_passenger/', views.user_passenger),
+    path('user_favourite/', views.user_favourite),
 
+    path('adim_flightList', view_flight.adim_flightList, name='adim_flightList'),
+    path('orderList', view_order.orderList, name='orderList'),
+    path('returnmoney', view_order.returnmoney, name='returnmoney'),
     #数据请求
 
     #用户
@@ -62,6 +68,10 @@ urlpatterns = [
     # 机票
     path('ticketInfo', view_ticket.ticketInfo, name='ticketInfo'),
     path('ticketList', view_ticket.ticketList, name='ticketList'),
+    # 收藏
+    path('favouriteAdd', view_order.favouriteAdd, name='favouriteAdd'),
+    path('favourList', view_order.favourList, name='favourList'),
+    path('FavoriteDrop', view_order.FavoriteDrop, name='FavoriteDrop'),
     # 管理员
     path('adminEdit', view_user.adminEdit, name='adminEdit'),
     path('adminEdituser', view_user.adminEdituser, name='adminEdituser'),

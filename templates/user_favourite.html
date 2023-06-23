@@ -1,7 +1,7 @@
 {%extends "user.html" %}
  <!-- 导航标记 -->
-{% block order %}active{% endblock %}
-{% block current-page %}购票记录{% endblock %}
+{% block favourite %}active{% endblock %}
+{% block current-page %}收藏列表{% endblock %}
 <!-- 内容区 -->
 {% block mainbody %}
 
@@ -9,7 +9,7 @@
 <div id="appuserorder" class="container">
   <div class="top-panel">
     <div class="panel-header">
-      <div class="panel-title">订单列表</div>
+      <div class="panel-title">收藏列表</div>
       <div class="panel-filter">
       </div>
     </div>
@@ -19,60 +19,48 @@
       :data="list"
       style="width: 100%">
       <el-table-column
-        prop="order_id"
-        width="200"
-        label="订单号">
+        prop="favorite_id"
+        label="收藏编号"
+        width="150">
       </el-table-column>
       <el-table-column
         prop="flight_num1"
         label="航班号1"
-        width="150"
-        align="center">
-      </el-table-column>
-      <el-table-column
-        prop="airplane_num1"
-        label="飞机号1"
-        width="120"
+        width="200"
         align="center">
       </el-table-column>
       <el-table-column
         prop="flight_num2"
         label="航班号2"
-        width="150"
+        width="200"
         align="center">
       </el-table-column>
       <el-table-column
-        prop="airplane_num2"
-        label="飞机号2"
-        width="120"
+        prop="set_class1"
+        label="舱位1"
+        width="200"
         align="center">
       </el-table-column>
       <el-table-column
-        prop="order_time"
-        label="下单时间"
-        width="150"
+        prop="set_class2"
+        label="舱位2"
+        width="200"
         align="center">
       </el-table-column>
       <el-table-column
-        prop="price"
+        prop="total_price"
         label="总价"
-        width="80"
-        align="center">
-      </el-table-column>
-      <el-table-column
-        prop="order_state" 
-        label="订单状态"
-        width="100"
+        width="200"
         align="center">
       </el-table-column>
       <el-table-column
         prop="order_status"
         label="操作"
         :formatter="onFormatterOrderStatus"
-        width="120"
+        width="80"
         align="center">
         <template slot-scope="{ row }">
-          <el-button type="text" @click="orderReturn(row)">申请退款</el-button>
+          <el-button type="text" @click="favourDrop(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -147,17 +135,14 @@
         userInfo = JSON.parse(userInfo)
         this.userInfo = userInfo
       }
-      this.getOrderList()
+      this.getFavourList()
     },
     methods: {
-      getOrderList() {
+      getFavourList() {
         // 获取订单列表
-        axios.post(ToDJ('orderList'), new URLSearchParams(this.userInfo)).then(res => {
+        axios.post(ToDJ('favourList'), new URLSearchParams(this.userInfo)).then(res => {
           if (res.data.code === 0) {
             const list = res.data.data
-            for (const item of list) {
-              item.order_time = this.formateTime(item.order_time)
-            }
             this.list = list 
           } else {
             this.NotifyFail(res.data.data)
@@ -170,11 +155,13 @@
         return statusList[row.status]
       },
       // 退款操作
-      orderReturn(row) {
+      favourDrop(row) {
         // 获取票信息
-        axios.post(ToDJ('orderReturn'), new URLSearchParams({order_id: row.order_id})).then(res => {
+        const combinedData = Object.assign({}, row, this.userInfo);
+        axios.post(ToDJ('FavoriteDrop'), new URLSearchParams(combinedData)).then(res => {
           if (res.data.code === 0) {
-            this.NotifySuc("退款申请成功")
+            this.NotifySuc("删除成功")
+            this.getFavourList()
           } else {
             this.NotifyFail(res.data.data)
           }

@@ -11,7 +11,7 @@
     <div class="panel-header">
       <div class="panel-title">订单列表</div>
       <div class="panel-filter">
-        <el-input size="mini" prefix-icon="el-icon-search" v-model="queryInfo.user_name" placeholder="请输入名称"></el-input>
+        <el-input size="mini" prefix-icon="el-icon-search" v-model="queryInfo.user_name" placeholder="要查询的用户名:"></el-input>
         <el-button size="mini" @click="getOrderList">查询</el-button>
       </div>
     </div>
@@ -21,46 +21,64 @@
       :data="list"
       style="width: 100%">
       <el-table-column
-        prop="id"
+        prop="order_id"
         label="订单号">
       </el-table-column>
       <el-table-column
         prop="user_name"
-        label="用户名称">
+        label="用户名">
       </el-table-column>
       <el-table-column
-        prop="flight_id"
-        label="航班号"
-        width="100"
+        prop="flight_num1"
+        label="航班号1"
+        width="150"
         align="center">
       </el-table-column>
       <el-table-column
-        prop="time"
+        prop="airplane_num1"
+        label="飞机号1"
+        width="120"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="flight_num2"
+        label="航班号2"
+        width="150"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="airplane_num2"
+        label="飞机号2"
+        width="120"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="order_time"
         label="下单时间"
         width="150"
         align="center">
       </el-table-column>
       <el-table-column
-        prop="ticket_id"
-        label="机票"
-        width="80"
-        align="center">
-        <template slot-scope="{ row }">
-          <el-button v-if="row.ticket_id" type="text" @click="onShowTicket(row)">查看</el-button>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="cost"
-        label="费用"
+        prop="price"
+        label="总价"
         width="80"
         align="center">
       </el-table-column>
       <el-table-column
-        prop="status"
-        label="状态"
+        prop="order_state"
+        label="订单状态"
+        width="80"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="order_status"
+        label="操作"
         :formatter="onFormatterOrderStatus"
         width="80"
         align="center">
+        <template slot-scope="{ row }">
+          <el-button type="text" @click="returnmoney(row)">退款</el-button>
+        </template>
       </el-table-column>
     </el-table>
   </div>
@@ -72,7 +90,7 @@
       <div class="ticket-content">
         <div class="left">
           <div class="info-item">
-            <span class="label">姓名</span>
+            <span class="label">用户名</span>
             <span class="valie">: {{ ticketInfo.user_name }}</span>
           </div>
           <div class="info-item">
@@ -121,7 +139,6 @@
       return {
         list: [],
         queryInfo: {
-          user_id: '',
           user_name: ''
         },
         // 票详情
@@ -133,18 +150,21 @@
       let userInfo = window.localStorage.getItem("aircraft_userInfo")
       if (userInfo) {
         userInfo = JSON.parse(userInfo)
-        this.queryInfo.user_id = userInfo.id_card
+        document.getElementById('user-name').innerHTML = userInfo.administrator_id
       }
       this.getOrderList()
     },
     methods: {
       getOrderList() {
-        // 获取列表
-        axios.post(ToDJ('orderList'), new URLSearchParams({ user_name: this.queryInfo.user_name })).then(res => {
+        // 获取订单列表
+        if (!this.queryInfo.user_name) {
+          this.queryInfo.user_name = ''
+        }
+        axios.post(ToDJ('orderList'), new URLSearchParams(this.queryInfo)).then(res => {
           if (res.data.code === 0) {
             const list = res.data.data
             for (const item of list) {
-              item.time = this.formateTime(item.time)
+              item.order_time = this.formateTime(item.order_time)
             }
             this.list = list 
           } else {
@@ -157,23 +177,16 @@
         const statusList = ['', '未放票', '已放票', '已退票']
         return statusList[row.status]
       },
-      // 查看票详情
-      onShowTicket(row) {
+      // 退款操作
+      returnmoney(row) {
         // 获取票信息
-        axios.post(ToDJ('ticketInfo'), new URLSearchParams({ticket_id: row.ticket_id})).then(res => {
+        axios.post(ToDJ('returnmoney'), new URLSearchParams({order_id: row.order_id})).then(res => {
           if (res.data.code === 0) {
-            const info = res.data.data
-            let formatinfo = {}
-            for (const key in info) {
-              formatinfo[key] = info[key][0]
-            }
-            formatinfo.boarding_time = this.formateTime(formatinfo.boarding_time)
-            formatinfo.depart_time = this.formateTime(formatinfo.depart_time)
-            this.ticketInfo = formatinfo 
-            this.showTicketInfo = true
+            this.NotifySuc("退款成功")
           } else {
             this.NotifyFail(res.data.data)
           }
+          this.getOrderList()
         })
       },
       // 成功提示

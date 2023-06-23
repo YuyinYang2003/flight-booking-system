@@ -100,7 +100,7 @@
         align="center">
         <template slot-scope="{ row }">
           <el-button type="text" @click="onChooseFlight(row)">购票</el-button>
-          <el-button type="text" @click="onFavouriteFlight(row)">收藏</el-button>
+          <el-button type="text" @click="FavourFlight(row)">收藏</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -128,6 +128,19 @@
       <el-button type="primary" @click="onSubmitBuy">确认购买</el-button>
     </div>
   </el-dialog>
+
+  <el-dialog :visible.sync="showFavourInfoForm">
+    <el-form ref="showFavourForm" :model="buyInfo" label-width="110px" label-position="left">
+      <el-form-item label="座位类型" prop="set_class">
+        <el-radio v-model="buyInfo.set_class" label="头等舱">头等舱 余票：{{flightinfo.current_first_set1}}</el-radio>
+        <el-radio v-model="buyInfo.set_class" label="公务舱">公务舱 余票：{{flightinfo.current_bussiness_set1}}</el-radio>
+        <el-radio v-model="buyInfo.set_class" label="经济舱">经济舱 余票：{{flightinfo.current_economy_set1}}</el-radio>
+      </el-form-item>  
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button type="primary" @click="onFavouriteFlight">确认收藏</el-button>
+    </div>
+  </el-dialog>
 </div>
 {% endverbatim %}
 <script>
@@ -139,7 +152,8 @@
         passengerf: [],
         // 添加
         addFlightFormType: 1,
-        showAddFlightForm: false,
+        showABuyInfoForm: false,
+        showFavourInfoForm: false,
         addFlightInfo: {
           airplane_num1: '',
           airplane_num2: '',
@@ -274,7 +288,6 @@
       },
       // 选票
       onChooseFlight(row) {
-        
         this.flightinfo = row
         this.buyInfo.flight_num1 = this.flightinfo.flight_num1
         this.buyInfo.flight_num2 = this.flightinfo.flight_num2
@@ -294,19 +307,61 @@
           if (res.data.code === 0) {
             this.NotifySuc("购买成功")
             this.showABuyInfoForm = false
+            this.buyInfo= {
+              user_name: '',
+              passenger_identity_id: '',
+              flight_mode: '',
+              set_class: '',
+              usePointOrNot: '',
+              flight_num1: '',
+              flight_num2: '',
+              airplane_num1: '',
+              airplane_num2: ''
+            }
             this.getFlightList()
           } else {
             this.NotifyFail(res.data.data)
           }
         })
       },
+      // 选收藏
+      FavourFlight(row) {
+        this.flightinfo = row
+        this.buyInfo.flight_num1 = this.flightinfo.flight_num1
+        this.buyInfo.flight_num2 = this.flightinfo.flight_num2
+        this.buyInfo.airplane_num1 = this.flightinfo.airplane_num1
+        this.buyInfo.airplane_num2 = this.flightinfo.airplane_num2
+        if (this.flightinfo.flight_num2 !== undefined && this.flightinfo.flight_num2 !== null && this.flightinfo.flight_num2 !== ''){
+          this.buyInfo.flight_mode = 1
+        }
+        else{
+          this.buyInfo.flight_mode = 0
+        }
+        this.showFavourInfoForm = true
+      },
       // 收藏
-      onFavouriteFlight(row) {
-        this.
-        axios.post(ToDJ('orderAdd'), new URLSearchParams(this.buyInfo)).then(res => {
+      onFavouriteFlight() {
+        axios.post(ToDJ('favouriteAdd'), new URLSearchParams(this.buyInfo)).then(res => {
           if (res.data.code === 0) {
-            this.NotifySuc("购买成功")
-            this.showABuyInfoForm = false
+            this.NotifySuc("收藏成功")
+            this.showFavourInfoForm = false
+            this.buyInfo= {
+              user_name: '',
+              passenger_identity_id: '',
+              flight_mode: '',
+              set_class: '',
+              usePointOrNot: '',
+              flight_num1: '',
+              flight_num2: '',
+              airplane_num1: '',
+              airplane_num2: ''
+            }
+            let userInfo = window.localStorage.getItem("aircraft_userInfo")
+              if (userInfo) {
+                userInfo = JSON.parse(userInfo)
+                this.userInfo = userInfo
+                this.buyInfo.user_name = userInfo.user_name
+              }
             this.getFlightList()
           } else {
             this.NotifyFail(res.data.data)

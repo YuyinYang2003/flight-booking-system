@@ -134,9 +134,9 @@ def orderAdd(request):
         seat_num='SW'+str(total_seat-remain_seat + 1)
       
       #计算积分和价格变更
-      if usePointOrNot:
-        cost=buyTicketAlter(point,cost,user_type)[1]
-        point=buyTicketAlter(point,cost,user_type)[0]
+      #if usePointOrNot:
+      #  cost=buyTicketAlter(float(point),cost,user_type)[1]
+      #  point=buyTicketAlter(float(point),cost,user_type)[0]
       
       #生成订单
       classl=['经济舱','头等舱','公务舱']
@@ -215,9 +215,9 @@ def orderAdd(request):
         seat_num2='SW'+str(total_seat2-remain_seat2 + 1)
       
       #计算积分和价格变更
-      if usePointOrNot:
-        cost=buyTicketAlter(point,cost,user_type)[1]
-        point=buyTicketAlter(point,cost,user_type)[0]
+      #if usePointOrNot:
+      #  cost=buyTicketAlter(point,cost,user_type)[1]
+      #  point=buyTicketAlter(point,cost,user_type)[0]
       
       #生成订单
       classl=['经济舱','头等舱','公务舱']
@@ -252,7 +252,7 @@ def orderList(request):
     temp_data['airplane_num1'] = flight_info.objects.filter(flight_num= item.flight_num1).first().airplane_num
     temp_data['order_time'] = item.order_time
     temp_data['price'] = item.price
-    temp_data['order_status'] = item.order_status
+    temp_data['order_state'] = item.order_state
     if item.flight_num2:
       temp_data['flight_num2'] = item.flight_num2
       temp_data['airplane_num2'] = flight_info.objects.filter(flight_num= item.flight_num2).first().airplane_num
@@ -265,35 +265,35 @@ def favouriteAdd(request):
   # 获取参数
   user_name = request.POST.get('user_name')  #获取用户名
   flight_mode = request.POST.get('flight_mode')  #获取要收藏的这个订单是直飞0还是中转1
+  flight_mode = int(flight_mode)
   set_class = request.POST.get('set_class')  #获取舱位
   #如果是直飞：
   if flight_mode == 0:
     flight_num = request.POST.get('flight_num1')  #获取想要收藏的航班号
-    print('收藏：', flight_num,  user_name)
     checkFlight = flight_info.objects.filter(flight_num=flight_num).first()
-    checkFavorite = favorites.objects.filter(user_name = user_name,flight_num=flight_num,set_class1=set_class).first()  #检验有没有收藏过
+    checkFavorite = favorites.objects.filter(user_name = user_name,flight_num1=flight_num,set_class1=set_class,flight_num2='无').first()  #检验有没有收藏过
     #如果之前已经收藏过
-    if checkFavorite.exists():
+    if checkFavorite:
       return Action.fail("已存在收藏夹中")  
     else :
       UserlastFavorite = favorites.objects.filter(user_name = user_name).last()  #检验用户之前是否有过收藏记录
       #按照舱位的不同收藏不同的价格
       if set_class == '经济舱':
-        if UserlastFavorite.exists():   #存在收藏记录则收藏编号+1
-          newfavorite = favorites(favorites_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,total_price=checkFlight.economy_class_price)
+        if UserlastFavorite:   #存在收藏记录则收藏编号+1
+          newfavorite = favorites(favorite_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,set_class2='无',total_price=checkFlight.economy_class_price)
         else:   #不存在则设置为0
-          newfavorite = favorites(favorites_id = 1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,total_price=checkFlight.economy_class_price)
+          newfavorite = favorites(favorite_id = 1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,set_class2='无',total_price=checkFlight.economy_class_price)
       else :
         if set_class == '头等舱':
-          if UserlastFavorite.exists():
-            newfavorite = favorites(favorites_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,total_price=checkFlight.first_class_price)
+          if UserlastFavorite:
+            newfavorite = favorites(favorite_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,set_class2='无',total_price=checkFlight.first_class_price)
           else:
-            newfavorite = favorites(favorites_id = 1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,total_price=checkFlight.first_class_price)
+            newfavorite = favorites(favorite_id = 1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,set_class2='无',total_price=checkFlight.first_class_price)
         else:
-          if UserlastFavorite.exists():
-            newfavorite = favorites(favorites_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,total_price=checkFlight.bussiness_class_price)
+          if UserlastFavorite:
+            newfavorite = favorites(favorite_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,set_class2='无',total_price=checkFlight.business_class_price)
           else:
-            newfavorite = favorites(favorites_id = 1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,total_price=checkFlight.bussiness_class_price)
+            newfavorite = favorites(favorite_id = 1,user_name=user_name,flight_num1=flight_num,set_class1=set_class,set_class2='无',total_price=checkFlight.business_class_price)
       newfavorite.save()
       return Action.success()
   else:
@@ -301,30 +301,30 @@ def favouriteAdd(request):
     if flight_mode == 1:
       flight_num1 = request.POST.get('flight_num1')  #获取第一趟航班
       flight_num2 = request.POST.get('flight_num2')  #获取第二段航班
-      print('收藏：', flight_num,flight_num2, user_name)
+      print('收藏：', flight_num1,flight_num2, user_name)
       # 查询收藏，和之前相同，只是增加了第二段航班的信息和转机字段
       checkFlight = flight_result.objects.filter(flight_num1=flight_num1,flight_num2=flight_num2).first()
       checkFavorite = favorites.objects.filter(user_name = user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class).first()
-      if checkFavorite.exists():
+      if checkFavorite:
         return Action.fail("已存在收藏夹中")  
       else :
         UserlastFavorite = favorites.objects.filter(user_name = user_name).last()
         if set_class == '经济舱':
-          if UserlastFavorite.exists():
-            newfavorite = favorites(favorites_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.economy_class_price,transfer=(checkFlight.depart_time2-checkFlight.arrive_time1))
+          if UserlastFavorite:
+            newfavorite = favorites(favorite_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.economy_class_price)
           else:
-            newfavorite = favorites(favorites_id = 1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.economy_class_price,transfer=(checkFlight.depart_time2-checkFlight.arrive_time1))
+            newfavorite = favorites(favorite_id = 1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.economy_class_price)
         else :
           if set_class == '头等舱':
-            if UserlastFavorite.exists():
-              newfavorite = favorites(favorites_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.first_class_price,transfer=(checkFlight.depart_time2-checkFlight.arrive_time1))
+            if UserlastFavorite:
+              newfavorite = favorites(favorite_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.first_class_price)
             else:
-              newfavorite = favorites(favorites_id = 1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.first_class_price,transfer=(checkFlight.depart_time2-checkFlight.arrive_time1))
+              newfavorite = favorites(favorite_id = 1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.first_class_price)
           else:
-            if UserlastFavorite.exists():
-              newfavorite = favorites(favorites_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.business_class_price,transfer=(checkFlight.depart_time2-checkFlight.arrive_time1))
+            if UserlastFavorite:
+              newfavorite = favorites(favorite_id = UserlastFavorite.favorite_id+1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.business_class_price)
             else:
-              newfavorite = favorites(favorites_id = 1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.business_class_price,transfer=(checkFlight.depart_time2-checkFlight.arrive_time1))
+              newfavorite = favorites(favorite_id = 1,user_name=user_name,flight_num1=flight_num1,flight_num2=flight_num2,set_class1=set_class,set_class2=set_class,total_price=checkFlight.business_class_price)
         newfavorite.save()
         return Action.success()
 
@@ -341,12 +341,12 @@ def favourList(request):
   #显示信息
   for item in list:
     temp_data = {}
-    temp_data['favourite_id'] = item.favourite_id
+    temp_data['favorite_id'] = item.favorite_id
     temp_data['flight_num1'] = item.flight_num1
     temp_data['airplane_num1'] = flight_info.objects.filter(flight_num= item.flight_num1).first().airplane_num
     temp_data['set_class1']=item.set_class1
     temp_data['total_price'] = item.total_price
-    temp_data['transfer_time'] = item.transfer_time
+    #temp_data['transfer_time'] = item.transfer_time
     if item.flight_num2:
       temp_data['airplane_num2'] = flight_info.objects.filter(flight_num= item.flight_num2).first().airplane_num
       temp_data['set_class2']=item.set_class1
@@ -359,10 +359,11 @@ def orderReturn(request):
   # 获取参数
   order_id = request.POST.get('order_id')
   # 查询
+  print(order_id)
   checkOrder = order_info.objects.filter(order_id=order_id).first()
   if not checkOrder :
     return Action.fail("订单不存在")
-  checkOrder.order_status = '退款申请'  #修改订单状态
+  checkOrder.order_state = '退款申请'  #修改订单状态
   checkOrder.save()
   return Action.success()
 
@@ -375,7 +376,7 @@ def returnmoney(request):
   checkOrder = order_info.objects.filter(order_id=order_id).first()
   if not checkOrder :
     return Action.fail("订单不存在")
-  checkOrder.order_status = '已退款'  #修改订单状态
+  checkOrder.order_state = '已退款'  #修改订单状态
   checkOrder.save()
   return Action.success()
 
@@ -385,11 +386,11 @@ def FavoriteDrop(request):
   favorite_id = request.POST.get('favorite_id')
   user_name=request.POST.get('user_name')
   # 查询该收藏是否被当前用户添加到收藏信息中
-  checkfavorite_id = favorites.objects.filter(Q(favorite_id=favorite_id)|Q(user_name=user_name))
-  if checkfavorite_id.exists() == False :
-    # 如果该收藏没有被用户添加，则返回错误信息
-    return Action.fail("当前收藏不存在")
-  else:
+  checkfavorite_id = favorites.objects.filter(Q(favorite_id=favorite_id)&Q(user_name=user_name))
+  if checkfavorite_id:
     # 若收藏已经被添加，则删除
     checkfavorite_id.delete()
     return Action.success()
+  else:
+    # 如果该收藏没有被用户添加，则返回错误信息
+    return Action.fail("当前收藏不存在")

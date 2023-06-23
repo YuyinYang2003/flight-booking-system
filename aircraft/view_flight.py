@@ -215,7 +215,41 @@ def flightDelay(request):
     checkFlight.current_first_set=0
     checkFlight.save()
     for item in ticketList:
-      item.order_status = '该航班已取消'  #修改订单状态
+      item.order_state = '航班取消'  #修改订单状态
       item.save()
     return Action.success()
   
+def adim_flightList(request):
+  #航班查询四个筛选方式：价格，出发地，到达地，出发日期，行李信息
+  depart = request.POST.get('depart')
+  arrive = request.POST.get('arrive')
+  depart_time = request.POST.get('depart_time')
+  flight_num =  request.POST.get('flight_num')
+  list = flight_city2.objects.all()
+  arr = []
+  if depart:
+    list = list.filter(depart_city=depart)
+  if flight_num:
+    list = list.filter(flight_num=flight_num)
+  if arrive:
+    list = list.filter(arrive_city=arrive)
+  if depart_time:
+    list = list.filter(depart_time1__range=(datetime.strptime(depart_time, '%Y-%m-%d'),datetime.strptime(depart_time, '%Y-%m-%d')+timedelta(days=+1)))
+  for item in list:
+    flight = {}
+    flight['flight_num'] = item.flight_num
+    flight['depart_time'] = item.depart_time 
+    flight['arrive_time'] = item.arrive_time
+    flight['depart_airport_name'] = item.depart_airport_name
+    flight['depart_city'] = item.depart_city
+    flight['arrive_airport_name'] = item.arrive_airport_name
+    flight['arrive_city'] = item.arrive_city
+    flight['current_bussiness_set'] = item.current_bussiness_set
+    flight['current_economy_set'] = item.current_economy_set
+    flight['current_first_set'] = item.current_first_set
+    flight['first_class_price'] = item.first_class_price
+    flight['business_class_price'] = item.business_class_price
+    flight['economy_class_price'] = item.economy_class_price
+
+    arr.append(flight)
+  return Action.success(arr)   

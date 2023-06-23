@@ -40,3 +40,7 @@ def user_user(request):
 #用户页面: 乘机人
 def user_passenger(request):
   return render(request, 'user_passenger.html')
+
+#用户页面: 收藏表
+def user_favourite(request):
+  return render(request, 'user_favourite.html')
