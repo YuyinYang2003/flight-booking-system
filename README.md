@@ -12,3 +12,4 @@
 
 6.python manage.py runserver，之后到http://127.0.0.1:8000/login 网页进行登录或注册访问。新用户先注册后访问，已经注册过的用户可以直接登录访问。
 
+test1
